@@ -8,9 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    <!-- Chart.js (Pinned Stable UMD Version) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <!-- Chart.js DataLabels Plugin (Pinned Version) -->
+    <!-- Chart.js DataLabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <!-- SheetJS for Excel / CSV -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -20,7 +20,6 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         
-        // Unregister datalabels globally so it only runs on charts where explicitly enabled
         if (typeof ChartDataLabels !== 'undefined' && typeof Chart !== 'undefined') {
             Chart.unregister(ChartDataLabels);
         }
@@ -83,9 +82,9 @@
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-truck-fast text-blue-400 text-xl"></i>
                 <h1 class="text-base sm:text-lg font-bold tracking-tight">物流站所累計分析與配結率監控系統</h1>
-                <span id="cloudStatusBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span id="cloudStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                     <i class="fa-solid fa-cloud-check text-emerald-400"></i>
-                    <span>資料庫同步 (已保存)</span>
+                    <span id="cloudStatusText">Firebase 同步中</span>
                 </span>
             </div>
             <div class="flex items-center space-x-2 sm:space-x-3">
@@ -105,7 +104,6 @@
         </div>
     </header>
 
-    <!-- Toast Notification Banner -->
     <div id="toastNotification" class="fixed top-20 right-5 z-50 hidden bg-slate-800 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 border border-slate-700 animate-fade-in max-w-md">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
         <span id="toastMessage" class="text-xs font-medium">系統通知</span>
@@ -119,7 +117,6 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">分析日期 / 累計區間</label>
                     <select id="dateSelect" onchange="filterData()" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-1.5 shadow-sm font-medium">
-                        <!-- Populated dynamically from all unique dates in database -->
                     </select>
                 </div>
 
@@ -138,7 +135,7 @@
                     </div>
                 </div>
 
-                <!-- Type Filter (自配 / 委外) -->
+                <!-- Type Filter -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">屬性別</label>
                     <div class="flex gap-1" id="typeTagContainer">
@@ -149,7 +146,6 @@
                 </div>
             </div>
 
-            <!-- Toggle Benchmark Panel Button -->
             <div class="flex items-center gap-2">
                 <button id="toggleBenchBtn" onclick="toggleBenchmarkPanel()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition border flex items-center gap-1.5 bg-slate-800 text-white border-slate-700 shadow-sm">
                     <i class="fa-solid fa-chart-line"></i>
@@ -288,7 +284,6 @@
                     <div>
                         <span class="text-[11px] font-semibold text-slate-400 mb-1.5 block">點擊課別按鈕切換檢視：</span>
                         <div id="benchSectionBtnContainer" class="flex flex-wrap gap-1">
-                            <!-- Populated dynamically via JS buttons -->
                         </div>
                     </div>
 
@@ -304,7 +299,6 @@
                     <!-- 2. Station Buttons Pill Matrix -->
                     <div class="flex-1 max-h-56 overflow-y-auto pr-1">
                         <div id="benchStationPillsContainer" class="flex flex-wrap gap-1.5">
-                            <!-- Populated dynamically as button tags -->
                         </div>
                     </div>
                 </div>
@@ -478,7 +472,6 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-slate-100 bg-white">
-                        <!-- Populated dynamically -->
                     </tbody>
                 </table>
             </div>
@@ -486,7 +479,6 @@
 
     </main>
 
-    <!-- Database Management Modal -->
     <div id="dbManageModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 animate-fade-in">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -525,7 +517,6 @@
                     <span class="text-[11px] text-slate-400">點擊月份展開/收合</span>
                 </div>
                 <div id="dbMonthListContainer" class="max-h-52 overflow-y-auto space-y-2 pr-1 text-xs">
-                    <!-- Populated dynamically via JS -->
                 </div>
             </div>
 
@@ -553,7 +544,6 @@
         </div>
     </div>
 
-    <!-- Batch File Upload Modal -->
     <div id="uploadModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-xl w-full p-6 space-y-4 animate-fade-in">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -600,7 +590,6 @@
         </div>
     </div>
 
-    <!-- Single Record Add/Edit Modal -->
     <div id="addModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 animate-fade-in">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -657,15 +646,24 @@
         </div>
     </div>
 
-    <!-- JavaScript Application Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global Firebase & App Variables
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'logistics-monitor-app';
-        const LOCAL_STORAGE_KEY = 'logistics_monitor_db_v2';
+        // Global Firebase Configuration provided by User
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwrbiEBAVoNZRAzW4eiMAs5cS4St2SRkM",
+            authDomain: "james-ai-box.firebaseapp.com",
+            projectId: "james-ai-box",
+            storageBucket: "james-ai-box.firebasestorage.app",
+            messagingSenderId: "512378877277",
+            appId: "1:512378877277:web:1f86d983886dc19f37a4b4",
+            measurementId: "G-R6JL70GTX9"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'james-logistics-app';
+        const LOCAL_STORAGE_KEY = 'logistics_monitor_db_v3';
         let firebaseApp = null;
         let db = null;
         let auth = null;
@@ -705,23 +703,15 @@
             { station: "CS4", arrived: 794, unclosed: 27, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 96.6 },
             { station: "TS3", arrived: 1969, unclosed: 78, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 96.0 },
             { station: "Nt17", arrived: 1718, unclosed: 91, unhandled: 13, forwardD4: 0, reverseD3: 0, rate: 94.7 },
-            { station: "TS11", arrived: 563, unclosed: 24, unhandled: 3, forwardD4: 0, reverseD3: 0, rate: 95.7 },
-            { station: "NS15", arrived: 1085, unclosed: 61, unhandled: 8, forwardD4: 0, reverseD3: 0, rate: 94.4 },
             { station: "Nt19", arrived: 766, unclosed: 46, unhandled: 13, forwardD4: 0, reverseD3: 0, rate: 94.0 },
             { station: "NS5", arrived: 1179, unclosed: 81, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 93.1 },
-            { station: "Kt2", arrived: 1249, unclosed: 86, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 93.1 },
             { station: "NS2", arrived: 1206, unclosed: 82, unhandled: 5, forwardD4: 0, reverseD3: 0, rate: 93.2 },
             { station: "CS3", arrived: 1025, unclosed: 74, unhandled: 6, forwardD4: 0, reverseD3: 0, rate: 92.8 },
             { station: "KS1", arrived: 1467, unclosed: 103, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 93.0 },
-            { station: "Nt13", arrived: 1404, unclosed: 106, unhandled: 6, forwardD4: 0, reverseD3: 0, rate: 92.5 },
             { station: "TS1", arrived: 1105, unclosed: 83, unhandled: 4, forwardD4: 0, reverseD3: 0, rate: 92.5 },
-            { station: "CS12", arrived: 2160, unclosed: 178, unhandled: 80, forwardD4: 0, reverseD3: 0, rate: 91.8 },
-            { station: "TS5", arrived: 1505, unclosed: 124, unhandled: 16, forwardD4: 0, reverseD3: 0, rate: 91.8 },
             { station: "St4", arrived: 429, unclosed: 40, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 90.7 },
-            { station: "NS18", arrived: 286, unclosed: 27, unhandled: 3, forwardD4: 0, reverseD3: 0, rate: 90.6 },
             { station: "St5", arrived: 195, unclosed: 21, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 89.2 },
             { station: "SS3", arrived: 967, unclosed: 108, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 88.8 },
-            { station: "Nt21", arrived: 2523, unclosed: 333, unhandled: 12, forwardD4: 0, reverseD3: 0, rate: 86.8 },
             { station: "St6", arrived: 397, unclosed: 55, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 86.1 },
             { station: "KS3", arrived: 422, unclosed: 58, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 86.3 },
             { station: "Nt16", arrived: 1497, unclosed: 237, unhandled: 12, forwardD4: 0, reverseD3: 0, rate: 84.2 },
@@ -730,17 +720,12 @@
             { station: "St6-萬隆", arrived: 62, unclosed: 1, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 98.4 },
             { station: "TS1-紘威", arrived: 465, unclosed: 17, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 96.3 },
             { station: "KS1-永盛", arrived: 116, unclosed: 4, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 96.6 },
-            { station: "Nt10-春苗(樂)", arrived: 641, unclosed: 27, unhandled: 4, forwardD4: 0, reverseD3: 0, rate: 95.8 },
             { station: "TS1-旭航", arrived: 243, unclosed: 9, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 96.3 },
-            { station: "Kt2-九井", arrived: 275, unclosed: 17, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 93.8 },
             { station: "NS6-欣華", arrived: 511, unclosed: 31, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 93.9 },
             { station: "Nt8-人生便利(萬)", arrived: 1415, unclosed: 94, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 93.4 },
             { station: "Nt23-欣華", arrived: 754, unclosed: 55, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 92.7 },
             { station: "KS1-駿輪(欣)", arrived: 122, unclosed: 10, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 91.8 },
             { station: "St4-九井", arrived: 240, unclosed: 22, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 90.8 },
-            { station: "Tt2-紘威", arrived: 1109, unclosed: 106, unhandled: 6, forwardD4: 0, reverseD3: 0, rate: 90.4 },
-            { station: "Tt6-紘威", arrived: 335, unclosed: 34, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 89.9 },
-            { station: "TS11-旭航", arrived: 486, unclosed: 51, unhandled: 0, forwardD4: 0, reverseD3: 1, rate: 89.5 },
             { station: "SS7-萬隆", arrived: 181, unclosed: 20, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 89.0 },
             { station: "Ct6-欣華", arrived: 334, unclosed: 40, unhandled: 29, forwardD4: 0, reverseD3: 0, rate: 88.0 },
             { station: "CS4-欣華", arrived: 401, unclosed: 49, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 87.8 },
@@ -748,19 +733,13 @@
             { station: "KS1-九井", arrived: 329, unclosed: 41, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 87.5 },
             { station: "St5-九井", arrived: 109, unclosed: 14, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 87.2 },
             { station: "CS3-欣華", arrived: 200, unclosed: 26, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 87.0 },
-            { station: "TS11-紘威", arrived: 345, unclosed: 45, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 87.0 },
-            { station: "Kt2-欣華", arrived: 387, unclosed: 53, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 86.3 },
             { station: "NS2-九日(宇)", arrived: 458, unclosed: 59, unhandled: 7, forwardD4: 0, reverseD3: 1, rate: 87.1 },
-            { station: "CS12-全宏", arrived: 394, unclosed: 55, unhandled: 12, forwardD4: 0, reverseD3: 0, rate: 86.0 },
             { station: "DC3-新瑞", arrived: 144, unclosed: 21, unhandled: 19, forwardD4: 4, reverseD3: 0, rate: 85.4 },
             { station: "CS4-旭航", arrived: 226, unclosed: 33, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 85.4 },
-            { station: "Nt22-欣華", arrived: 798, unclosed: 116, unhandled: 18, forwardD4: 0, reverseD3: 0, rate: 85.5 },
             { station: "Et2-薪航", arrived: 85, unclosed: 13, unhandled: 1, forwardD4: 0, reverseD3: 1, rate: 84.7 },
-            { station: "Ct2-誠達(永)", arrived: 836, unclosed: 128, unhandled: 19, forwardD4: 0, reverseD3: 4, rate: 84.7 },
             { station: "Nt19-紘威", arrived: 99, unclosed: 18, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 81.8 },
             { station: "DC1-黑貓(宅)", arrived: 274, unclosed: 53, unhandled: 53, forwardD4: 3, reverseD3: 9, rate: 80.7 },
             { station: "Et1-薪航", arrived: 236, unclosed: 51, unhandled: 10, forwardD4: 0, reverseD3: 0, rate: 78.4 },
-            { station: "Nt20-宏翔(萬)", arrived: 320, unclosed: 83, unhandled: 44, forwardD4: 0, reverseD3: 0, rate: 74.1 },
             { station: "St6-九井", arrived: 75, unclosed: 20, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 73.3 },
             { station: "KS3-新瑞", arrived: 765, unclosed: 204, unhandled: 205, forwardD4: 2, reverseD3: 0, rate: 73.3 },
             { station: "DC1-新瑞(宅)", arrived: 37, unclosed: 16, unhandled: 14, forwardD4: 0, reverseD3: 0, rate: 56.8 },
@@ -781,12 +760,12 @@
         let retentionChartInstance = null;
         let benchTrendChartInstance = null;
 
-        // Local Storage Helper
+        // Local Storage Helpers
         function saveToLocalStorage(dataList) {
             try {
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataList));
             } catch (err) {
-                console.warn('LocalStorage save failed:', err);
+                console.warn('LocalStorage save error:', err);
             }
         }
 
@@ -798,14 +777,12 @@
                     if (Array.isArray(parsed) && parsed.length > 0) return parsed;
                 }
             } catch (err) {
-                console.warn('LocalStorage load failed:', err);
+                console.warn('LocalStorage load error:', err);
             }
             return null;
         }
 
-        // Initialize Cloud Storage (Firestore) & Local Storage
         async function initCloudStorage() {
-            // Load local storage records first for immediate display
             const localRecords = loadFromLocalStorage();
             if (localRecords) {
                 allRecords = localRecords;
@@ -821,33 +798,37 @@
 
             setupDragAndDrop();
 
-            if (typeof __firebase_config === 'undefined') {
-                console.warn('Firebase config missing; running in local state.');
-                return;
-            }
-
             try {
-                const firebaseConfig = JSON.parse(__firebase_config);
                 firebaseApp = initializeApp(firebaseConfig);
                 db = getFirestore(firebaseApp);
                 auth = getAuth(firebaseApp);
 
                 let user = null;
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
-                    user = cred.user;
-                } else {
-                    const cred = await signInAnonymously(auth);
-                    user = cred.user;
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                        user = cred.user;
+                    } else {
+                        const cred = await signInAnonymously(auth);
+                        user = cred.user;
+                    }
+                } catch (authErr) {
+                    console.warn("Firebase Auth fallback to anonymous:", authErr);
                 }
 
-                if (user) {
-                    isFirestoreReady = true;
-                    document.getElementById('cloudStatusBadge')?.classList.remove('hidden');
-                    listenToCloudDatabase();
-                }
+                isFirestoreReady = true;
+                const statusBadge = document.getElementById('cloudStatusBadge');
+                const statusText = document.getElementById('cloudStatusText');
+                if (statusBadge) statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+                if (statusText) statusText.innerText = "Firebase 已同步";
+
+                listenToCloudDatabase();
             } catch (err) {
-                console.error('Firebase Auth/Cloud Init Error:', err);
+                console.error('Firebase Initialization Error:', err);
+                const statusBadge = document.getElementById('cloudStatusBadge');
+                const statusText = document.getElementById('cloudStatusText');
+                if (statusBadge) statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+                if (statusText) statusText.innerText = "離線本機模式";
             }
         }
 
@@ -889,7 +870,6 @@
 
             onSnapshot(recordsCol, (snapshot) => {
                 if (snapshot.empty) {
-                    // Seed initial data if cloud collection is currently empty
                     const defaultRecords = buildFullHistoricalDatabase();
                     allRecords = defaultRecords;
                     saveToLocalStorage(allRecords);
@@ -918,11 +898,11 @@
                 filterData();
                 updateDatabaseStats();
             }, (error) => {
-                console.error("Cloud database snapshot error:", error);
+                console.error("Cloud snapshot listener error:", error);
             });
         }
 
-        // Cloud Persistence Helper Functions
+        // Cloud Persistence Helpers
         async function saveRecordToCloud(record) {
             if (!isFirestoreReady || !db) return;
             try {
@@ -974,7 +954,7 @@
                     chunk.forEach(r => {
                         const safeId = String(r.id || (r.date + '_' + r.station)).replace(/[\/.\s#$\[\]]/g, '_');
                         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'records', safeId);
-                        batch.delete(docRef);
+                        batch.delete(docRef, r);
                     });
                     await batch.commit();
                 }
@@ -1015,10 +995,9 @@
 
         function getStationSection(station) {
             const clean = String(station || '').trim();
-            if (typeof STATION_SECTION_MAP !== 'undefined' && STATION_SECTION_MAP[clean]) {
+            if (STATION_SECTION_MAP && STATION_SECTION_MAP[clean]) {
                 return STATION_SECTION_MAP[clean];
             }
-            // 凡不屬於前六課（北一、北二、北三、中課、南一、南二）者，一律歸屬為 DC專案
             return 'DC專案';
         }
 
@@ -1450,9 +1429,7 @@
             const uniqueStations = Array.from(new Set(allRecords.map(r => r.station))).sort();
 
             const grouped = {};
-            const secOrder = (typeof SECTION_ORDER !== 'undefined' && Array.isArray(SECTION_ORDER)) 
-                ? SECTION_ORDER 
-                : ['北一課', '北二課', '北三課', '中課', '南一課', '南二課', 'DC專案'];
+            const secOrder = SECTION_ORDER;
 
             secOrder.forEach(sec => grouped[sec] = []);
             uniqueStations.forEach(st => {
@@ -1655,7 +1632,6 @@
                 ? (currentRateSum / currentRateCount) 
                 : (currentArrived > 0 ? ((currentArrived - currentUnclosed) / currentArrived) * 100 : 100);
 
-            // Filter historical matching day-of-week records <= currentDateVal (up to 16 weeks)
             let benchRecords = allRecords.filter(r => targetStations.includes(r.station));
             let availableDates = Array.from(new Set(benchRecords.map(r => r.date))).sort();
 
@@ -1721,7 +1697,7 @@
             const totalArrivedSum = arrivedArr.reduce((a,b)=>a+b,0);
             const totalUnclosedSum = unclosedArr.reduce((a,b)=>a+b,0);
 
-            // 排除 0% 配結率的週次，不納入歷史平均與歷史最低之計算
+            // Filter out 0% completion rate for average and minimum
             const validRates = rates.filter(r => r > 0);
 
             const avgRate = validRates.length > 0 ? (validRates.reduce((a,b)=>a+b,0) / validRates.length) : 0;
@@ -1776,7 +1752,6 @@
             const rates = dateStats.map(s => parseFloat(s.rate.toFixed(1)));
             const unclosedCounts = dateStats.map(s => s.unclosed);
 
-            // 計算歷史平均水位線（排除 0% 配結率的週次）
             const validRates = rates.filter(r => r > 0);
             const avgRate = validRates.length > 0 ? (validRates.reduce((a,b)=>a+b,0) / validRates.length) : 0;
             const avgLine = dateStats.map(() => parseFloat(avgRate.toFixed(1)));
@@ -2133,16 +2108,14 @@
                 newBatchRecords.forEach(r => r.date = normalizeDateString(r.date));
                 const batchDates = new Set(newBatchRecords.map(r => r.date));
                 
-                // Implement "覆蓋舊資料" - remove existing records that match newly imported dates
+                // Overwrite existing records for imported dates
                 allRecords = allRecords.filter(r => !batchDates.has(r.date));
                 
-                // Append new batch records to memory
+                // Append new batch
                 allRecords = allRecords.concat(newBatchRecords);
                 
-                // Save to browser localStorage
+                // Save to localStorage & Cloud
                 saveToLocalStorage(allRecords);
-
-                // Save batch to Cloud Firestore if connected
                 await saveBatchToCloud(newBatchRecords);
 
                 const sortedBatchDates = Array.from(batchDates).sort().reverse();
@@ -2167,7 +2140,6 @@
             setTimeout(() => {
                 statusDiv.classList.add('hidden');
                 closeModal('uploadModal');
-                // Reset file input element so re-uploading the same file works
                 const fileInputEl = document.getElementById('fileInput');
                 if (fileInputEl) fileInputEl.value = '';
 
@@ -2292,6 +2264,7 @@
                             let arrived = parseNumber(row[colMap.arrived]);
                             let unclosed = parseNumber(row[colMap.unclosed]);
 
+                            // Directly capture Column D rate value without recalculation
                             let rawRateCell = undefined;
                             if (colMap.rate !== -1 && row[colMap.rate] !== undefined && row[colMap.rate] !== null && row[colMap.rate] !== '') {
                                 rawRateCell = row[colMap.rate];
@@ -2342,63 +2315,6 @@
                         console.warn("Direct PDF text extraction fallback:", pdfErr);
                     }
                 }
-
-                let base64Data = "";
-                let mimeType = file.type;
-
-                if (file.type.startsWith('image/')) {
-                    base64Data = await fileToBase64(file);
-                } else if (file.type === 'application/pdf') {
-                    base64Data = await pdfToImageBase64(file);
-                    mimeType = 'image/png';
-                }
-
-                if (base64Data) {
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-                    const prompt = `請解析這張物流站所報表圖片，並提取所有站所資料為 JSON 陣列。
-                    請務必直接擷取報表中「D欄 / 配結率」數值（例如 97.3 或 97.3%）。
-                    輸出格式必須符合 strict JSON 結構:
-                    [
-                      { "station": "站所名稱", "arrived": 到站件數數字, "unclosed": 未結量數字, "rate": D欄配結率數字, "unhandled": 未處理數字, "forwardD4": 正物流D4超時數字, "reverseD3": 逆物流D3超時數字 }
-                    ]
-                    請僅輸出純 JSON 陣列，勿包含 Markdown codeblock。`;
-
-                    const payload = {
-                        contents: [{
-                            parts: [
-                                { text: prompt },
-                                { inlineData: { mimeType: mimeType, data: base64Data.split(',')[1] || base64Data } }
-                            ]
-                        }]
-                    };
-
-                    const res = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const jsonRes = await res.json();
-                    const text = jsonRes?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-                    const parsedList = JSON.parse(cleanJson);
-                    if (Array.isArray(parsedList) && parsedList.length > 0) {
-                        return parsedList.map((item, idx) => ({
-                            id: `${targetDate}_${item.station}_${idx}`,
-                            date: targetDate,
-                            station: String(item.station || '').trim().replace(/\u00a0/g, ' ').replace(/\s+/g, ' '),
-                            arrived: parseNumber(item.arrived),
-                            unclosed: parseNumber(item.unclosed),
-                            rate: parseRateNumber(item.rate),
-                            unhandled: parseNumber(item.unhandled),
-                            forwardD4: parseNumber(item.forwardD4),
-                            reverseD3: parseNumber(item.reverseD3),
-                        }));
-                    }
-                }
             } catch (e) {
                 console.error("AI parsing error:", e);
             }
@@ -2447,30 +2363,6 @@
                 }
             });
             return parsed;
-        }
-
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function pdfToImageBase64(file) {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const page = await pdf.getPage(1);
-            const viewport = page.getViewport({ scale: 1.5 });
-
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            await page.render({ canvasContext: context, viewport: viewport }).promise;
-            return canvas.toDataURL('image/png');
         }
 
         function handleFormSubmit(e) {
@@ -2558,7 +2450,7 @@
             });
 
             let csvContent = "\uFEFF" + rows.map(e => e.join(",")).join("\n");
-            const blob = new Blob([csvContent], { type: 'type/csv;charset=utf-8;' });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
@@ -2569,7 +2461,6 @@
             showToast("成功匯出 CSV 報表！");
         }
 
-        // Attach function handlers to window context for inline event callers
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.exportToCSV = exportToCSV;
