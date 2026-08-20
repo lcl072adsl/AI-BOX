@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cloudflare.com"/>
     <!-- Chart.js (Pinned Stable UMD Version) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- Chart.js DataLabels Plugin (Pinned Version) -->
@@ -16,14 +16,15 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- PDF.js for PDF Rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-    <!-- 🟢 新增：手機與電腦相容的 Firebase 核心庫與即時資料庫外掛 -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
     
+    <!-- 🟢 核心修正：手機與電腦絕對相容的 Firebase 連線晶片 -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         
+        // Unregister datalabels globally so it only runs on charts where explicitly enabled
         if (typeof ChartDataLabels !== 'undefined' && typeof Chart !== 'undefined') {
             Chart.unregister(ChartDataLabels);
         }
@@ -85,11 +86,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-truck-fast text-blue-400 text-xl"></i>
-                <h1 class="text-base sm:text-lg font-bold tracking-tight">物流站所累計分析與配結率監控系統</h1>
-                <!-- 🟢 狀態欄強制顯示，用來讓您掌握雲端連線狀態 -->
-                <span id="cloudStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                    <i id="cloudStatusIcon" class="fa-solid fa-cloud-arrow-down animate-pulse text-indigo-400"></i>
-                    <span id="cloudStatusText">正在連接雲端...</span>
+                <h1 class="text-base sm:text-lg font-bold tracking-tight">物流站所累計 analysis 與配結率監控系統</h1>
+                
+                <!-- 🟢 即時連線狀態燈：全自動監測有無離線 -->
+                <span id="cloudStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <i id="cloudStatusIcon" class="fa-solid fa-cloud-check text-emerald-400"></i>
+                    <span id="cloudStatusText">資料庫同步 (已保存)</span>
                 </span>
             </div>
             <div class="flex items-center space-x-2 sm:space-x-3">
@@ -123,7 +125,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">分析日期 / 累計區間</label>
                     <select id="dateSelect" onchange="filterData()" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-1.5 shadow-sm font-medium">
-                        <option value="">請先上傳或同步數據</option>
+                        <!-- Populated dynamically from all unique dates in database -->
                     </select>
                 </div>
 
@@ -141,47 +143,27 @@
                         <button onclick="setSectionFilter('DC專案')" class="section-tag-btn px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200">DC專案</button>
                     </div>
                 </div>
+
+                <!-- Type Filter (自配 / 委外) -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">屬性別</label>
+                    <div class="flex gap-1" id="typeTagContainer">
+                        <button onclick="setTypeFilter('ALL')" class="type-tag-btn active px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-600 text-white shadow-xs">全部</button>
+                        <button onclick="setTypeFilter('自配')" class="type-tag-btn px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200">自配</button>
+                        <button onclick="setTypeFilter('委外')" class="type-tag-btn px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200">委外</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toggle Benchmark Panel Button -->
+            <div class="flex items-center gap-2">
+                <button id="toggleBenchBtn" onclick="toggleBenchmarkPanel()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition border flex items-center gap-1.5 bg-slate-800 text-white border-slate-700 shadow-sm">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>控制面板選項</span>
+                </button>
             </div>
         </div>
 
-        <!-- 預留的模擬主畫面區塊：避免排版因切斷出錯 -->
-        <div class="glass-card rounded-xl p-6 text-center text-slate-400 text-sm shadow-sm">
-            <i class="fa-solid fa-chart-line text-4xl mb-2 text-slate-300 block"></i>
-            物流分析圖表與指標核心區塊（已就緒，等待數據串接）
-        </div>
-    </main>
-
-    <!-- 🟢 核心 JavaScript 處理區（包含您的 Firebase 密鑰與完全同步邏輯） -->
-    <script>
-        // 1. 初始化您的 Firebase 設定
-        const firebaseConfig = {
-            apiKey: "AIzaSyDwrbiEBAVoNZRAzW4eiMAs5cS4St2SRkM",
-            authDomain: "://firebaseapp.com",
-            projectId: "james-ai-box",
-            storageBucket: "james-ai-box.firebasestorage.app",
-            messagingSenderId: "512378877277",
-            appId: "1:512378877277:web:1f86d983886dc19f37a4b4",
-            databaseURL: "https://firebaseio.com"
-        };
-
-        // 啟動連線
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // 模擬系統內部記憶體（原本的本地變數庫）
-        let logisticDatabase = [];
-        let currentSectionFilter = 'ALL';
-
-        // 狀態列元件抓取
-        const statusBadge = document.getElementById('cloudStatusBadge');
-        const statusIcon = document.getElementById('cloudStatusIcon');
-        const statusText = document.getElementById('cloudStatusText');
-
-        // 2. 顯示通知訊息工具 (Toast)
-        function showNotification(msg, isSuccess = true) {
-            const toast = document.getElementById('toastNotification');
-            const toastMsg = document.getElementById('toastMessage');
-            const toastIcon = document.getElementById('toastIcon');
-            
-            toastMsg.innerText = msg;
-            if(isSuccess) {
+        <!-- 數據展示主儀表板（穩固排版結構） -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="glass-card rounded-xl p-6 shadow-sm min-h-[300px]">
