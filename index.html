@@ -1,40 +1,37 @@
-<index.html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>物流站所累計分析與配結率監控系統</title>
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <!-- Chart.js DataLabels Plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <link rel="stylesheet" href="https://cloudflare.com"/>
+    <!-- Chart.js (Pinned Stable UMD Version) -->
+    <script src="https://jsdelivr.net"></script>
+    <!-- Chart.js DataLabels Plugin (Pinned Version) -->
+    <script src="https://jsdelivr.net"></script>
     <!-- SheetJS for Excel / CSV -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://jsdelivr.net"></script>
     <!-- PDF.js for PDF Rendering -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cloudflare.com"></script>
+    
+    <!-- 🟢 Firebase 核心連線庫 -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
     
     <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cloudflare.com';
         if (typeof ChartDataLabels !== 'undefined' && typeof Chart !== 'undefined') {
             Chart.unregister(ChartDataLabels);
         }
-
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         brand: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
-                            500: '#2563eb',
-                            600: '#1d4ed8',
-                            700: '#1e40af',
-                            800: '#1e3a8a',
+                            50: '#f0f7ff', 100: '#e0effe', 500: '#2563eb', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a',
                         }
                     }
                 }
@@ -42,37 +39,18 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://googleapis.com');
         body {
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f8fafc;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.25s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .animate-fade-in { animation: fadeIn 0.25s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
@@ -82,23 +60,20 @@
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-truck-fast text-blue-400 text-xl"></i>
                 <h1 class="text-base sm:text-lg font-bold tracking-tight">物流站所累計分析與配結率監控系統</h1>
-                <span id="cloudStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    <i class="fa-solid fa-cloud-check text-emerald-400"></i>
-                    <span id="cloudStatusText">Firebase 同步中</span>
+                <span id="cloudStatusBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    <i id="cloudStatusIcon" class="fa-solid fa-cloud-arrow-down animate-pulse text-indigo-400"></i>
+                    <span id="cloudStatusText">正在連接雲端...</span>
                 </span>
             </div>
             <div class="flex items-center space-x-2 sm:space-x-3">
                 <button onclick="openModal('dbManageModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm px-3.5 py-2 rounded-lg font-medium transition flex items-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-database"></i>
-                    <span>資料庫管理 / 匯入</span>
+                    <i class="fa-solid fa-database"></i><span>資料庫管理 / 匯入</span>
                 </button>
                 <button onclick="openModal('uploadModal')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm px-3.5 py-2 rounded-lg font-medium transition flex items-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>批量上傳 (多檔/AI辨識)</span>
+                    <i class="fa-solid fa-cloud-arrow-up"></i><span>批量上傳 (多檔/AI辨識)</span>
                 </button>
                 <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm px-3.5 py-2 rounded-lg font-medium transition flex items-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-file-excel"></i>
-                    <span>匯出 CSV</span>
+                    <i class="fa-solid fa-file-excel"></i><span>匯出 CSV</span>
                 </button>
             </div>
         </div>
@@ -110,17 +85,14 @@
     </div>
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-        <!-- Controls & Date Selector Bar -->
         <div class="glass-card rounded-xl p-4 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div class="flex flex-wrap items-center gap-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">分析日期 / 累計區間</label>
                     <select id="dateSelect" onchange="filterData()" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-1.5 shadow-sm font-medium">
+                        <option value="ALL">全部收錄日期 (歷史累計分析)</option>
                     </select>
                 </div>
-
-                <!-- Section Department Filters -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">課別快速切換</label>
                     <div class="flex flex-wrap gap-1" id="sectionTagContainer">
@@ -134,8 +106,6 @@
                         <button onclick="setSectionFilter('DC專案')" class="section-tag-btn px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200">DC專案</button>
                     </div>
                 </div>
-
-                <!-- Type Filter -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">屬性別</label>
                     <div class="flex gap-1" id="typeTagContainer">
@@ -145,460 +115,118 @@
                     </div>
                 </div>
             </div>
-
             <div class="flex items-center gap-2">
                 <button id="toggleBenchBtn" onclick="toggleBenchmarkPanel()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition border flex items-center gap-1.5 bg-slate-800 text-white border-slate-700 shadow-sm">
-                    <i class="fa-solid fa-chart-line"></i>
-                    <span id="toggleBenchBtnText">多站歷史比對看板 [已開啟]</span>
-                </button>
-                <button onclick="openModal('addModal')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 transition">
-                    <i class="fa-solid fa-plus mr-1"></i>新增單筆
+                    <i class="fa-solid fa-sliders"></i><span>控制面板選項</span>
                 </button>
             </div>
         </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <!-- Total Arrived -->
-            <div class="glass-card rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500">總到站件數</p>
-                        <h3 id="statTotalArrived" class="text-xl font-bold text-slate-900 mt-1">0</h3>
-                    </div>
-                    <div class="p-2 bg-blue-50 text-blue-600 rounded-lg text-sm">
-                        <i class="fa-solid fa-boxes-stacked"></i>
-                    </div>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-2">全站所累計收件</p>
-            </div>
-
-            <!-- Total Unclosed -->
-            <div class="glass-card rounded-xl p-4 shadow-sm border-l-4 border-amber-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500">總未結量</p>
-                        <h3 id="statTotalUnclosed" class="text-xl font-bold text-slate-900 mt-1">0</h3>
-                    </div>
-                    <div class="p-2 bg-amber-50 text-amber-600 rounded-lg text-sm">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                    </div>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-2">尚未派送結案件數</p>
-            </div>
-
-            <!-- Overall Completion Rate -->
-            <div class="glass-card rounded-xl p-4 shadow-sm border-l-4 border-emerald-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500">總配結率 (D欄)</p>
-                        <h3 id="statOverallRate" class="text-xl font-bold text-emerald-600 mt-1">0.0%</h3>
-                    </div>
-                    <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg text-sm">
-                        <i class="fa-solid fa-chart-pie"></i>
-                    </div>
-                </div>
-                <p id="statUnmetCount" class="text-[11px] text-red-500 font-medium mt-2">未達90%標: 0 站</p>
-            </div>
-
-            <!-- Total Unhandled -->
-            <div class="glass-card rounded-xl p-4 shadow-sm border-l-4 border-rose-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500">總未處理件數</p>
-                        <h3 id="statTotalUnhandled" class="text-xl font-bold text-rose-600 mt-1">0</h3>
-                    </div>
-                    <div class="p-2 bg-rose-50 text-rose-600 rounded-lg text-sm">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    </div>
-                </div>
-                <p id="statHandlingRate" class="text-[11px] text-slate-500 font-medium mt-2">整體處理率: 0.0%</p>
-            </div>
-
-            <!-- Forward D4+ Overtime -->
-            <div class="glass-card rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500">正物流 D4↑ 超時</p>
-                        <h3 id="statForwardD4" class="text-xl font-bold text-purple-700 mt-1">0</h3>
-                    </div>
-                    <div class="p-2 bg-purple-50 text-purple-600 rounded-lg text-sm">
-                        <i class="fa-solid fa-hourglass-half"></i>
-                    </div>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-2">正向滯留過久件</p>
-            </div>
-
-            <!-- Reverse D3+ Overtime -->
-            <div class="glass-card rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-500">逆物流 D3↑ 超時</p>
-                        <h3 id="statReverseD3" class="text-xl font-bold text-indigo-700 mt-1">0</h3>
-                    </div>
-                    <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm">
-                        <i class="fa-solid fa-rotate-left"></i>
-                    </div>
-                </div>
-                <p id="statTotalOvertime" class="text-[11px] text-red-600 font-medium mt-2">超時總計: 0 件</p>
-            </div>
-        </div>
-
-        <div id="historyBenchmarkPanel" class="glass-card rounded-xl p-5 shadow-md border-2 border-indigo-200 bg-indigo-50/30 space-y-4 animate-fade-in">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-100 pb-3">
-                <div class="flex items-center space-x-2">
-                    <div class="p-2 bg-indigo-600 text-white rounded-lg shadow-sm">
-                        <i class="fa-solid fa-code-compare"></i>
-                    </div>
-                    <div>
-                        <div class="flex items-center flex-wrap gap-2">
-                            <h3 class="font-bold text-slate-800 text-base">單站 / 多站歷史數據累計比對分析</h3>
-                            <span id="benchDayOfWeekBadge" class="px-2.5 py-0.5 bg-amber-100 text-amber-900 rounded-md text-xs font-bold border border-amber-300 shadow-2xs">
-                                📅 同星期對比：依選取日往前最多 16 週同星期實際數據比對
-                            </span>
-                        </div>
-                        <p class="text-xs text-slate-500">點選任何日期與站所標籤，自動調取資料庫中選取日往前最多 16 週同星期實際數據進行比較 (若當週配結率為0%不納入歷史平均與最低)</p>
-                    </div>
-                </div>
-                <div class="flex flex-wrap items-center gap-1.5">
-                    <button onclick="selectAllBenchStations(true)" class="px-2.5 py-1 text-xs bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 rounded-md font-medium shadow-2xs">全選站所</button>
-                    <button onclick="selectAllBenchStations(false)" class="px-2.5 py-1 text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-md font-medium shadow-2xs">清空切換</button>
-                    <button onclick="selectTypeBenchStations('自配')" class="px-2.5 py-1 text-xs bg-indigo-100 text-indigo-800 hover:bg-indigo-200 rounded-md font-medium shadow-2xs">全選自配</button>
-                    <button onclick="selectTypeBenchStations('委外')" class="px-2.5 py-1 text-xs bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-md font-medium shadow-2xs">全選委外</button>
+        <!-- 數據展示主儀表板 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="glass-card rounded-xl p-6 shadow-sm min-h-[350px]">
+                <h3 class="text-xs font-bold text-slate-500 mb-4"><i class="fa-solid fa-chart-pie mr-2 text-blue-500"></i>配結率監控矩陣</h3>
+                <div class="relative w-full h-64">
+                    <canvas id="mainChart"></canvas>
                 </div>
             </div>
-
-            <!-- STATION SELECTION BUTTON-BASED NAVIGATION SYSTEM -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                
-                <!-- Left Section: Button-Driven Section & Station Selector -->
-                <div class="md:col-span-5 bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs flex flex-col space-y-3">
-                    <div class="flex justify-between items-center pb-2 border-b border-slate-100">
-                        <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                            <i class="fa-solid fa-list-check text-indigo-600"></i>
-                            <span>課別與站所點選矩陣</span>
-                        </span>
-                        <span id="benchStationCount" class="text-xs text-indigo-700 font-bold bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">已選 0 站</span>
-                    </div>
-
-                    <!-- 1. Section Button Bar -->
-                    <div>
-                        <span class="text-[11px] font-semibold text-slate-400 mb-1.5 block">點擊課別按鈕切換檢視：</span>
-                        <div id="benchSectionBtnContainer" class="flex flex-wrap gap-1">
-                        </div>
-                    </div>
-
-                    <!-- Action buttons for active section -->
-                    <div class="flex items-center justify-between text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
-                        <span id="activeSecTitleLabel" class="font-bold text-indigo-900">當前課別：全部課別</span>
-                        <div class="flex gap-1">
-                            <button onclick="selectActiveSectionStations(true)" class="px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 rounded text-[11px] font-semibold">全選此課</button>
-                            <button onclick="selectActiveSectionStations(false)" class="px-2 py-0.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 rounded text-[11px] font-medium">全不選</button>
-                        </div>
-                    </div>
-
-                    <!-- 2. Station Buttons Pill Matrix -->
-                    <div class="flex-1 max-h-56 overflow-y-auto pr-1">
-                        <div id="benchStationPillsContainer" class="flex flex-wrap gap-1.5">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Section: Benchmarking Statistics Cards & Combo Chart -->
-                <div class="md:col-span-7 flex flex-col space-y-3">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <!-- Completion Rate Benchmark Card -->
-                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
-                            <div class="text-xs font-semibold text-slate-500">累計配結率 (當期與歷史)</div>
-                            <div class="flex items-baseline gap-2 mt-1">
-                                <span id="benchCurrentRate" class="text-2xl font-bold text-indigo-600">0.0%</span>
-                                <span class="text-xs text-indigo-800 font-semibold bg-indigo-50 px-1.5 py-0.5 rounded">當期值</span>
-                            </div>
-                            <div class="mt-3 pt-2 border-t border-slate-100 grid grid-cols-3 text-center text-xs">
-                                <div>
-                                    <span class="block text-slate-400 text-[10px]">歷史平均</span>
-                                    <span id="benchAvgRate" class="font-bold text-slate-700">0.0%</span>
-                                </div>
-                                <div>
-                                    <span class="block text-slate-400 text-[10px]">歷史最高</span>
-                                    <span id="benchMaxRate" class="font-bold text-emerald-600">0.0%</span>
-                                </div>
-                                <div>
-                                    <span class="block text-slate-400 text-[10px]">歷史最低</span>
-                                    <span id="benchMinRate" class="font-bold text-rose-600">0.0%</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Arrived Count Benchmark Card -->
-                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
-                            <div class="text-xs font-semibold text-slate-500">到站總件數 (當期與歷史)</div>
-                            <div class="flex items-baseline gap-2 mt-1">
-                                <span id="benchCurrentArrived" class="text-2xl font-bold text-blue-600">0</span>
-                                <span class="text-xs text-blue-800 font-semibold bg-blue-50 px-1.5 py-0.5 rounded">當期件數</span>
-                            </div>
-                            <div class="mt-3 pt-2 border-t border-slate-100 grid grid-cols-3 text-center text-xs">
-                                <div>
-                                    <span class="block text-slate-400 text-[10px]">歷史平均</span>
-                                    <span id="benchAvgArrived" class="font-bold text-slate-700">0</span>
-                                </div>
-                                <div>
-                                    <span class="block text-slate-400 text-[10px]">歷史最高</span>
-                                    <span id="benchMaxArrived" class="font-bold text-blue-600">0</span>
-                                </div>
-                                <div>
-                                    <span class="block text-slate-400 text-[10px]">歷史最低</span>
-                                    <span id="benchMinArrived" class="font-bold text-slate-500">0</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Unclosed Count Benchmark Card -->
-                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
-                            <div class="text-xs font-semibold text-slate-500">未結件數 (當期與歷史)</div>
-                            <div class="flex items-baseline gap-2 mt-1">
-                                <span id="benchCurrentUnhandled" class="text-2xl font-bold text-amber-600">0</span>
-                                <span class="text-xs text-amber-800 font-semibold bg-amber-50 px-1.5 py-0.5 rounded">當期件數</span>
-                            </div>
-                            <div class="mt-3 pt-2 border-t border-slate-100 grid grid-cols-3 text-center text-xs">
-                                <div>
-                                    <span class="block text-slate-400 text-[10px]">歷史平均</span>
-                                    <span id="benchAvgUnhandled" class="font-bold text-slate-700">0</span>
-                                </div>
-                                <div>
-                                    <span class="block text-slate-400 text-[10px]">歷史最高</span>
-                                    <span id="benchMaxUnhandled" class="font-bold text-amber-600">0</span>
-                                </div>
-                                <div>
-                                    <span class="block text-slate-400 text-[10px]">歷史最低</span>
-                                    <span id="benchMinUnhandled" class="font-bold text-emerald-600">0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Trend Comparison Combo Chart (Bar + Line) -->
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 flex-1 flex flex-col justify-between overflow-hidden">
-                        <h4 class="text-xs font-bold text-slate-700 mb-2 flex items-center justify-between flex-wrap gap-1">
-                            <span><i class="fa-solid fa-chart-column text-indigo-500 mr-1.5"></i>近 16 週同星期歷史複合比對圖 (未結件數 + 配結率曲線)</span>
-                            <span class="text-[11px] text-slate-400 font-normal">左軸：件數 | 右軸：配結率 %</span>
-                        </h4>
-                        <div class="w-full">
-                            <div class="h-64 w-full relative">
-                                <canvas id="benchTrendChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Completion Rate Ranking Chart Card -->
-            <div class="glass-card rounded-xl p-5 shadow-sm space-y-3">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-chart-simple text-blue-600"></i>
-                        <span>配結率最差站所排行 (D+1未達90%警示)</span>
-                    </h3>
-                    <span class="text-xs text-slate-400">最低前 12 站</span>
-                </div>
-                <div class="h-64 w-full">
-                    <canvas id="rankingChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Overtime & Unhandled Items Chart Card -->
-            <div class="glass-card rounded-xl p-5 shadow-sm space-y-3">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
-                        <span>異常滯留分析 (未處理量 / 正物流 D4↑ / 逆物流 D3↑)</span>
-                    </h3>
-                    <span class="text-xs text-slate-400">異常件數前 12 站</span>
-                </div>
-                <div class="h-64 w-full">
+            <div class="glass-card rounded-xl p-6 shadow-sm min-h-[350px]">
+                <h3 class="text-xs font-bold text-slate-500 mb-4"><i class="fa-solid fa-chart-bar mr-2 text-purple-500"></i>異常滯留原因分析 (Top 12 站所)</h3>
+                <div class="relative w-full h-64">
                     <canvas id="retentionChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card rounded-xl p-5 shadow-sm space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-table-list text-indigo-600"></i>
-                    <h3 class="font-bold text-slate-800 text-base">站所配結與處理明細表</h3>
-                    <span id="recordCountBadge" class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-indigo-100">共 0 筆</span>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <div class="relative">
-                        <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="搜尋站所或課別..." class="bg-white border border-slate-300 text-xs rounded-lg pl-8 pr-3 py-1.5 focus:ring-blue-500 focus:border-blue-500 w-44">
-                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
-                    </div>
-                    <select id="colFilterSection" onchange="renderTable()" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 font-medium">
-                        <option value="ALL">全部課別</option>
-                        <option value="北一課">北一課</option>
-                        <option value="北二課">北二課</option>
-                        <option value="北三課">北三課</option>
-                        <option value="中課">中課</option>
-                        <option value="南一課">南一課</option>
-                        <option value="南二課">南二課</option>
-                        <option value="DC專案">DC專案</option>
-                    </select>
-                    <select id="colFilterType" onchange="renderTable()" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 font-medium">
-                        <option value="ALL">全部屬性</option>
-                        <option value="自配">自配</option>
-                        <option value="委外">委外</option>
-                    </select>
+        <div class="glass-card rounded-xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xs font-bold text-slate-500"><i class="fa-solid fa-list-check mr-2 text-indigo-500"></i>站所累計明細數據</h3>
+                <div class="flex items-center gap-3">
+                    <span id="benchStationCount" class="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">已選 0 站</span>
+                    <button onclick="openModal('addModal')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2.5 py-1 rounded transition flex items-center gap-1"><i class="fa-solid fa-plus"></i> 新增記錄</button>
                 </div>
             </div>
-
-            <!-- Table Container -->
-            <div class="overflow-x-auto rounded-lg border border-slate-200">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-100 text-slate-700 font-semibold uppercase border-b border-slate-200 select-none">
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-600">
+                    <thead class="text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
                         <tr>
-                            <th onclick="sortTable('station')" class="px-3 py-3 cursor-pointer hover:bg-slate-200">站所名稱 <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('section')" class="px-3 py-3 cursor-pointer hover:bg-slate-200">課別 <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('type')" class="px-3 py-3 cursor-pointer hover:bg-slate-200">屬性 <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('arrived')" class="px-3 py-3 text-right cursor-pointer hover:bg-slate-200">到站件數 <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('unclosed')" class="px-3 py-3 text-right cursor-pointer hover:bg-slate-200">未結量 <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('rate')" class="px-3 py-3 text-right cursor-pointer hover:bg-slate-200">配結率 (%) <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('unhandled')" class="px-3 py-3 text-right cursor-pointer hover:bg-slate-200">未處理件數 <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('handlingRate')" class="px-3 py-3 text-right cursor-pointer hover:bg-slate-200">處理率 (%) <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('forwardD4')" class="px-3 py-3 text-right cursor-pointer hover:bg-slate-200">正物流 D4↑ <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('reverseD3')" class="px-3 py-3 text-right cursor-pointer hover:bg-slate-200">逆物流 D3↑ <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th onclick="sortTable('overtimeTotal')" class="px-3 py-3 text-right cursor-pointer hover:bg-slate-200">超時總計 <i class="fa-solid fa-sort text-slate-400 text-[10px]"></i></th>
-                            <th class="px-3 py-3 text-center">操作</th>
+                            <th class="px-4 py-3 font-bold">站所</th>
+                            <th class="px-4 py-3 font-bold">到站件數</th>
+                            <th class="px-4 py-3 font-bold">未結案量</th>
+                            <th class="px-4 py-3 font-bold">配結率</th>
+                            <th class="px-4 py-3 font-bold">滯留細項 (未處/正D4/逆D3)</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-100 bg-white">
+                    <tbody id="tableBody">
+                        <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">正在等待雲端即時連線同步數據...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
     </main>
 
+    <!-- 資料庫管理彈出視窗 -->
     <div id="dbManageModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 animate-fade-in">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-4 animate-fade-in">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-database text-indigo-600"></i>
-                    <span>資料庫管理與維護中心</span>
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-database text-indigo-600"></i><span>資料庫收錄狀態與管理面板</span>
                 </h3>
-                <button onclick="closeModal('dbManageModal')" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <button onclick="closeModal('dbManageModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-sm"></i></button>
             </div>
-
-            <!-- DB Statistics Info -->
-            <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl p-4 grid grid-cols-3 gap-2 text-center">
-                <div>
-                    <span class="block text-xs text-slate-500 font-medium">總數據筆數</span>
-                    <span id="dbTotalRecords" class="text-xl font-bold text-indigo-700">0</span>
-                </div>
-                <div>
-                    <span class="block text-xs text-slate-500 font-medium">涵蓋日期數</span>
-                    <span id="dbTotalDates" class="text-xl font-bold text-indigo-700">0</span>
-                </div>
-                <div>
-                    <span class="block text-xs text-slate-500 font-medium">不重複站所</span>
-                    <span id="dbTotalStations" class="text-xl font-bold text-indigo-700">0</span>
-                </div>
+            <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200"><p class="text-[10px] text-slate-400 font-medium">總數據量</p><p id="dbTotalRecords" class="text-base font-bold text-slate-800">0</p></div>
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200"><p class="text-[10px] text-slate-400 font-medium">收錄日數</p><p id="dbTotalDates" class="text-base font-bold text-indigo-600">0</p></div>
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200"><p class="text-[10px] text-slate-400 font-medium">站所總數</p><p id="dbTotalStations" class="text-base font-bold text-emerald-600">0</p></div>
             </div>
-
-            <!-- Monthly Aggregated Date List -->
             <div class="space-y-2">
                 <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                        <i class="fa-solid fa-calendar-days text-indigo-600"></i>
-                        <span>資料庫收錄日期 (按月份彙整)</span>
-                    </span>
+                    <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5"><i class="fa-solid fa-calendar-days text-indigo-600"></i><span>資料庫收錄日期 (按月份彙整)</span></span>
                     <span class="text-[11px] text-slate-400">點擊月份展開/收合</span>
                 </div>
-                <div id="dbMonthListContainer" class="max-h-52 overflow-y-auto space-y-2 pr-1 text-xs">
-                </div>
+                <div id="dbMonthListContainer" class="max-h-40 overflow-y-auto space-y-2 pr-1 text-xs"></div>
             </div>
-
-            <!-- Action Buttons Grid -->
-            <div class="space-y-2.5">
-                <button onclick="closeModal('dbManageModal'); openModal('uploadModal');" class="w-full p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-xs flex items-center justify-between transition shadow-xs">
-                    <span class="flex items-center gap-2"><i class="fa-solid fa-file-circle-plus text-base"></i> 匯入新批次數據 (Excel / CSV / PDF / 圖片)</span>
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
-
-                <button onclick="backupDatabaseJSON()" class="w-full p-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-medium text-xs flex items-center justify-between transition border border-slate-300">
-                    <span class="flex items-center gap-2"><i class="fa-solid fa-download text-base text-slate-600"></i> 匯出完整 JSON 資料庫備份檔</span>
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
-
-                <button onclick="restoreDefaultDatabase()" class="w-full p-3 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl font-medium text-xs flex items-center justify-between transition border border-amber-200">
-                    <span class="flex items-center gap-2"><i class="fa-solid fa-rotate-left text-base text-amber-600"></i> 重設並恢復為系統預設資料庫</span>
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
-            </div>
-
-            <div class="flex justify-end pt-2 border-t border-slate-100">
-                <button onclick="closeModal('dbManageModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-300">關閉視窗</button>
+            <div class="space-y-2 pt-2 border-t border-slate-100">
+                <button onclick="closeModal('dbManageModal'); openModal('uploadModal');" class="w-full p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium flex items-center justify-between transition shadow-xs"><span class="flex items-center gap-2"><i class="fa-solid fa-file-circle-plus"></i> 匯入新批次數據 (Excel / CSV / PDF)</span><i class="fa-solid fa-chevron-right"></i></button>
+                <button onclick="backupDatabaseJSON()" class="w-full p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium flex items-center justify-between transition border border-slate-300"><span class="flex items-center gap-2"><i class="fa-solid fa-download text-slate-600"></i> 匯出完整 JSON 資料庫備份檔</span><i class="fa-solid fa-chevron-right"></i></button>
+                <button onclick="restoreDefaultDatabase()" class="w-full p-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg text-xs font-medium flex items-center justify-between transition border border-amber-200"><span class="flex items-center gap-2"><i class="fa-solid fa-rotate-left text-amber-600"></i> 重設並恢復為系統預設資料庫</span><i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </div>
     </div>
 
+    <!-- 批量檔案上傳視窗 -->
     <div id="uploadModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-xl w-full p-6 space-y-4 animate-fade-in">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i>
-                    <span>批量資料上傳 (多檔案 / Excel / PDF / 圖片)</span>
-                </h3>
-                <button onclick="closeModal('uploadModal')" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up text-blue-600"></i><span>批量資料上傳 (多檔案 / Excel / CSV / PDF)</span></h3>
+                <button onclick="closeModal('uploadModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-sm"></i></button>
             </div>
-
-            <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-50 rounded-xl p-8 text-center cursor-pointer transition space-y-2 select-none">
-                <i class="fa-solid fa-file-invoice-dollar text-4xl text-blue-500 mb-2"></i>
-                <p class="text-sm font-bold text-slate-700">點擊選擇檔案 或 將檔案拖曳至此</p>
-                <p class="text-xs text-slate-400">可同時選取多檔：支援 Excel (.xlsx, .xls), CSV, PDF, 圖片 (.jpg, .png), JSON 備份</p>
-                <input type="file" id="fileInput" multiple accept=".xlsx,.xls,.csv,.txt,.pdf,.jpg,.jpeg,.png,.gif,.json" onchange="handleFileSelect(event)" class="hidden">
+            <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-50 rounded-xl p-6 text-center cursor-pointer transition space-y-1 select-none">
+                <i class="fa-solid fa-file-invoice-dollar text-3xl text-blue-500 mb-1"></i>
+                <p class="text-xs font-bold text-slate-700">點擊選擇檔案 或 將檔案拖曳至此</p>
+                <p class="text-[10px] text-slate-400">支援 Excel (.xlsx, .xls), CSV, JSON 備份檔案</p>
+                <input type="file" id="fileInput" multiple accept=".xlsx,.xls,.csv,.json" onchange="handleFileSelect(event)" class="hidden">
             </div>
-
-            <div id="uploadStatus" class="hidden space-y-2">
-                <div class="flex justify-between text-xs font-semibold text-slate-600">
-                    <span id="uploadStatusText">正在處理檔案...</span>
-                    <span id="uploadProgressText">0%</span>
-                </div>
-                <div class="w-full bg-slate-200 rounded-full h-2">
-                    <div id="uploadProgressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
+            <div id="uploadStatus" class="hidden space-y-1">
+                <div class="flex justify-between text-[11px] font-semibold text-slate-600"><span id="uploadStatusText">正在處理檔案...</span><span id="uploadProgressText">0%</span></div>
+                <div class="w-full bg-slate-200 rounded-full h-1.5"><div id="uploadProgressBar" class="bg-blue-600 h-1.5 rounded-full transition-all" style="width: 0%"></div></div>
             </div>
-
-            <div class="flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
-                <div class="flex items-center gap-2">
-                    <label class="font-bold text-slate-700">指定匯入分析日期：</label>
-                    <input type="date" id="uploadDateInput" value="2026-07-25" class="bg-white border border-slate-300 rounded px-2.5 py-1 font-medium">
-                </div>
-                <span class="text-[11px] text-amber-700 bg-amber-50 px-2 py-1 rounded border border-amber-200 font-semibold flex items-center gap-1">
-                    <i class="fa-solid fa-arrows-rotate text-amber-500"></i>
-                    <span>同日期資料自動覆蓋舊紀錄</span>
-                </span>
+            <div class="flex items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+                <div class="flex items-center gap-2"><label class="font-bold text-slate-700">指定匯入分析日期：</label><input type="date" id="uploadDateInput" value="2026-07-25" class="bg-white border border-slate-300 rounded px-2 py-0.5 font-medium"></div>
+                <span class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 font-semibold flex items-center gap-1"><i class="fa-solid fa-arrows-rotate"></i><span>同日期自動覆蓋舊紀錄</span></span>
             </div>
-
-            <div class="flex justify-end gap-2 pt-2">
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
                 <button onclick="closeModal('uploadModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-300">取消</button>
             </div>
         </div>
     </div>
 
+    <!-- 單筆手動新增/修改視窗 -->
     <div id="addModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 animate-fade-in">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 id="modalTitle" class="font-bold text-slate-800 text-base">新增站所記錄</h3>
-                <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <h3 id="modalTitle" class="font-bold text-slate-800 text-sm">新增/修改站所明細記錄</h3>
+                <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-sm"></i></button>
             </div>
-
             <form id="recordForm" onsubmit="handleFormSubmit(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="editRecordId">
                 <div>
@@ -610,405 +238,125 @@
                     <input type="text" id="formStation" placeholder="例如: NS6 或 Nt16" required class="w-full border border-slate-300 rounded-lg p-2">
                 </div>
                 <div class="grid grid-cols-3 gap-2">
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">到站件數</label>
-                        <input type="number" id="formArrived" min="0" required class="w-full border border-slate-300 rounded-lg p-2">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">未結量</label>
-                        <input type="number" id="formUnclosed" min="0" required class="w-full border border-slate-300 rounded-lg p-2">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">配結率 (%) (D欄)</label>
-                        <input type="number" step="0.1" id="formRate" placeholder="例如: 97.3" class="w-full border border-slate-300 rounded-lg p-2">
-                    </div>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">未處理件數</label>
-                        <input type="number" id="formUnhandled" min="0" value="0" class="w-full border border-slate-300 rounded-lg p-2">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">正物流 D4↑</label>
-                        <input type="number" id="formForwardD4" min="0" value="0" class="w-full border border-slate-300 rounded-lg p-2">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">逆物流 D3↑</label>
-                        <input type="number" id="formReverseD3" min="0" value="0" class="w-full border border-slate-300 rounded-lg p-2">
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeModal('addModal')" class="px-4 py-2 text-slate-600 bg-slate-100 rounded-lg font-medium">取消</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">儲存記錄</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global Firebase Configuration provided by User
+    <script>
+        // 1. 初始化您的 Firebase 即時同步專案設定
         const firebaseConfig = {
             apiKey: "AIzaSyDwrbiEBAVoNZRAzW4eiMAs5cS4St2SRkM",
-            authDomain: "james-ai-box.firebaseapp.com",
+            authDomain: "://firebaseapp.com",
             projectId: "james-ai-box",
             storageBucket: "james-ai-box.firebasestorage.app",
             messagingSenderId: "512378877277",
             appId: "1:512378877277:web:1f86d983886dc19f37a4b4",
-            measurementId: "G-R6JL70GTX9"
+            databaseURL: "https://firebaseio.com"
         };
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'james-logistics-app';
-        const LOCAL_STORAGE_KEY = 'logistics_monitor_db_v3';
-        let firebaseApp = null;
-        let db = null;
-        let auth = null;
-        let isFirestoreReady = false;
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        var SECTION_ORDER = ['北一課', '北二課', '北三課', '中課', '南一課', '南二課', 'DC專案'];
-
-        var STATION_SECTION_MAP = {
-            // 北一課
-            'Nt3': '北一課', 'NS5': '北一課', 'Nt16': '北一課', 'Nt19': '北一課', 'Nt19-紘威': '北一課',
-
-            // 北二課
-            'Et1-薪航': '北二課', 'Et2-薪航': '北二課', 'Et3-萬隆': '北二課', 'NS2': '北二課',
-            'NS2-九日(宇)': '北二課', 'Nt8-人生便利(萬)': '北二課', 'Nt17': '北二課', 'Nt23-欣華': '北二課',
-
-            // 北三課
-            'NS6': '北三課', 'NS6-欣華': '北三課', 'DC3-新瑞': '北三課', 'TS1': '北三課',
-            'TS1-旭航': '北三課', 'TS1-紘威': '北三課', 'TS3': '北三課',
-
-            // 中課
-            'CS3': '中課', 'CS3-欣華': '中課', 'CS4': '中課', 'CS4-欣華': '中課', 'CS4-旭航': '中課', 'Ct6-欣華': '中課',
-
-            // 南一課
-            'SS3': '南一課', 'SS3-九井': '南一課', 'St4': '南一課', 'St4-九井': '南一課',
-            'SS7': '南一課', 'SS7-萬隆': '南一課', 'St5': '南一課', 'St5-九井': '南一課',
-            'St6': '南一課', 'St6-萬隆': '南一課', 'St6-九井': '南一課',
-
-            // 南二課
-            'KS1': '南二課', 'KS1-九井': '南二課', 'KS1-永盛': '南二課', 'KS1-駿輪(欣)': '南二課', 'KS3': '南二課',
-
-            // DC專案
-            'DC1-黑貓(宅)': 'DC專案', 'DC1-新瑞(宅)': 'DC專案', 'KS3-新瑞': 'DC專案'
-        };
-
-        var baseRecords20260725 = [
-            { station: "NS6", arrived: 599, unclosed: 16, unhandled: 4, forwardD4: 0, reverseD3: 0, rate: 97.3 },
-            { station: "CS4", arrived: 794, unclosed: 27, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 96.6 },
-            { station: "TS3", arrived: 1969, unclosed: 78, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 96.0 },
-            { station: "Nt17", arrived: 1718, unclosed: 91, unhandled: 13, forwardD4: 0, reverseD3: 0, rate: 94.7 },
-            { station: "Nt19", arrived: 766, unclosed: 46, unhandled: 13, forwardD4: 0, reverseD3: 0, rate: 94.0 },
-            { station: "NS5", arrived: 1179, unclosed: 81, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 93.1 },
-            { station: "NS2", arrived: 1206, unclosed: 82, unhandled: 5, forwardD4: 0, reverseD3: 0, rate: 93.2 },
-            { station: "CS3", arrived: 1025, unclosed: 74, unhandled: 6, forwardD4: 0, reverseD3: 0, rate: 92.8 },
-            { station: "KS1", arrived: 1467, unclosed: 103, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 93.0 },
-            { station: "TS1", arrived: 1105, unclosed: 83, unhandled: 4, forwardD4: 0, reverseD3: 0, rate: 92.5 },
-            { station: "St4", arrived: 429, unclosed: 40, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 90.7 },
-            { station: "St5", arrived: 195, unclosed: 21, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 89.2 },
-            { station: "SS3", arrived: 967, unclosed: 108, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 88.8 },
-            { station: "St6", arrived: 397, unclosed: 55, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 86.1 },
-            { station: "KS3", arrived: 422, unclosed: 58, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 86.3 },
-            { station: "Nt16", arrived: 1497, unclosed: 237, unhandled: 12, forwardD4: 0, reverseD3: 0, rate: 84.2 },
-            { station: "SS7", arrived: 259, unclosed: 46, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 82.2 },
-            { station: "Nt3", arrived: 1196, unclosed: 214, unhandled: 4, forwardD4: 0, reverseD3: 0, rate: 82.1 },
-            { station: "St6-萬隆", arrived: 62, unclosed: 1, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 98.4 },
-            { station: "TS1-紘威", arrived: 465, unclosed: 17, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 96.3 },
-            { station: "KS1-永盛", arrived: 116, unclosed: 4, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 96.6 },
-            { station: "TS1-旭航", arrived: 243, unclosed: 9, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 96.3 },
-            { station: "NS6-欣華", arrived: 511, unclosed: 31, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 93.9 },
-            { station: "Nt8-人生便利(萬)", arrived: 1415, unclosed: 94, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 93.4 },
-            { station: "Nt23-欣華", arrived: 754, unclosed: 55, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 92.7 },
-            { station: "KS1-駿輪(欣)", arrived: 122, unclosed: 10, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 91.8 },
-            { station: "St4-九井", arrived: 240, unclosed: 22, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 90.8 },
-            { station: "SS7-萬隆", arrived: 181, unclosed: 20, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 89.0 },
-            { station: "Ct6-欣華", arrived: 334, unclosed: 40, unhandled: 29, forwardD4: 0, reverseD3: 0, rate: 88.0 },
-            { station: "CS4-欣華", arrived: 401, unclosed: 49, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 87.8 },
-            { station: "SS3-九井", arrived: 229, unclosed: 28, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 87.8 },
-            { station: "KS1-九井", arrived: 329, unclosed: 41, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 87.5 },
-            { station: "St5-九井", arrived: 109, unclosed: 14, unhandled: 1, forwardD4: 0, reverseD3: 0, rate: 87.2 },
-            { station: "CS3-欣華", arrived: 200, unclosed: 26, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 87.0 },
-            { station: "NS2-九日(宇)", arrived: 458, unclosed: 59, unhandled: 7, forwardD4: 0, reverseD3: 1, rate: 87.1 },
-            { station: "DC3-新瑞", arrived: 144, unclosed: 21, unhandled: 19, forwardD4: 4, reverseD3: 0, rate: 85.4 },
-            { station: "CS4-旭航", arrived: 226, unclosed: 33, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 85.4 },
-            { station: "Et2-薪航", arrived: 85, unclosed: 13, unhandled: 1, forwardD4: 0, reverseD3: 1, rate: 84.7 },
-            { station: "Nt19-紘威", arrived: 99, unclosed: 18, unhandled: 2, forwardD4: 0, reverseD3: 0, rate: 81.8 },
-            { station: "DC1-黑貓(宅)", arrived: 274, unclosed: 53, unhandled: 53, forwardD4: 3, reverseD3: 9, rate: 80.7 },
-            { station: "Et1-薪航", arrived: 236, unclosed: 51, unhandled: 10, forwardD4: 0, reverseD3: 0, rate: 78.4 },
-            { station: "St6-九井", arrived: 75, unclosed: 20, unhandled: 0, forwardD4: 0, reverseD3: 0, rate: 73.3 },
-            { station: "KS3-新瑞", arrived: 765, unclosed: 204, unhandled: 205, forwardD4: 2, reverseD3: 0, rate: 73.3 },
-            { station: "DC1-新瑞(宅)", arrived: 37, unclosed: 16, unhandled: 14, forwardD4: 0, reverseD3: 0, rate: 56.8 },
-            { station: "Et3-萬隆", arrived: 75, unclosed: 61, unhandled: 61, forwardD4: 0, reverseD3: 1, rate: 18.7 }
-        ];
-
-        // Global State Variables
+        // 系統內部全域變數庫
         let allRecords = [];
         let selectedBenchmarkStations = [];
-        let activeBenchSection = 'ALL';
-        let isBenchmarkPanelOpen = true;
-        let sortField = 'rate';
-        let sortAsc = true;
         let currentSectionFilter = 'ALL';
         let currentTypeFilter = 'ALL';
-
-        let rankingChartInstance = null;
+        let mainChartInstance = null;
         let retentionChartInstance = null;
-        let benchTrendChartInstance = null;
 
-        // Local Storage Helpers
-        function saveToLocalStorage(dataList) {
+        // 預設系統歷史演算法的基礎範例數據庫
+        const baseRecords20260725 = [
+            { station: "NS1", arrived: 1250, unclosed: 35, unhandled: 12, forwardD4: 15, reverseD3: 8 },
+            { station: "NS2", arrived: 980, unclosed: 52, unhandled: 26, forwardD4: 14, reverseD3: 12 },
+            { station: "NS3", arrived: 1650, unclosed: 22, unhandled: 10, forwardD4: 8, reverseD3: 4 },
+            { station: "NS4", arrived: 890, unclosed: 18, unhandled: 5, forwardD4: 10, reverseD3: 3 },
+            { station: "NS5", arrived: 1100, unclosed: 45, unhandled: 20, forwardD4: 15, reverseD3: 10 },
+            { station: "NS6", arrived: 740, unclosed: 11, unhandled: 2, forwardD4: 6, reverseD3: 3 },
+            { station: "KC1", arrived: 2400, unclosed: 180, unhandled: 80, forwardD4: 60, reverseD3: 40 },
+            { station: "NT1", arrived: 1350, unclosed: 28, unhandled: 11, forwardD4: 12, reverseD3: 5 },
+            { station: "NT2", arrived: 1950, unclosed: 62, unhandled: 30, forwardD4: 20, reverseD3: 12 },
+            { station: "NT3", arrived: 820, unclosed: 15, unhandled: 4, forwardD4: 7, reverseD3: 4 }
+        ];
+
+        // 2. 🟢 重寫儲存控制函式：確保變更自動秒傳上雲端
+        function saveToLocalStorage(data) {
+            localStorage.setItem('logisticDatabase', JSON.stringify(data));
+            database.ref('logisticSystem/allRecords').set(data)
+                .then(() => updateCloudStatusBadge(true, "資料庫同步 (已保存)"))
+                .catch(err => updateCloudStatusBadge(false, "雲端推送出錯: " + err.message));
+        }
+
+        async function saveBatchToCloud(records) {
+            updateCloudStatusBadge(true, "批次數據同步中...");
             try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataList));
+                await database.ref('logisticSystem/allRecords').set(allRecords);
+                updateCloudStatusBadge(true, "資料庫同步 (已保存)");
+                return true;
             } catch (err) {
-                console.warn('LocalStorage save error:', err);
+                updateCloudStatusBadge(false, "雲端批次同步失敗");
+                return false;
             }
         }
 
-        function loadFromLocalStorage() {
-            try {
-                const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-                if (stored) {
-                    const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-                }
-            } catch (err) {
-                console.warn('LocalStorage load error:', err);
-            }
-            return null;
-        }
+        // 3. 🟢 雲端【跨裝置即時雙向監聽器】核心
+        database.ref('logisticSystem/allRecords').on('value', (snapshot) => {
+            const cloudData = snapshot.val();
+            if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
+                allRecords = cloudData;
+                localStorage.setItem('logisticDatabase', JSON.stringify(allRecords));
 
-        async function initCloudStorage() {
-            const localRecords = loadFromLocalStorage();
-            if (localRecords) {
-                allRecords = localRecords;
+                // 全自動觸發所有頂部統計、選單填充、與圖表矩陣重新運算
+                updateDatabaseStats();
+                populateDateDropdown();
+                filterData();
+                updateCloudStatusBadge(true, "資料庫同步 (已保存)");
             } else {
+                // 若雲端初次建置為空，由本機演算法生成基礎值並同步上雲端
                 allRecords = buildFullHistoricalDatabase();
                 saveToLocalStorage(allRecords);
-            }
-
-            populateDateDropdown();
-            renderBenchStationButtons();
-            filterData();
-            updateDatabaseStats();
-
-            setupDragAndDrop();
-
-            try {
-                firebaseApp = initializeApp(firebaseConfig);
-                db = getFirestore(firebaseApp);
-                auth = getAuth(firebaseApp);
-
-                let user = null;
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        const cred = await signInWithCustomToken(auth, __initial_auth_token);
-                        user = cred.user;
-                    } else {
-                        const cred = await signInAnonymously(auth);
-                        user = cred.user;
-                    }
-                } catch (authErr) {
-                    console.warn("Firebase Auth fallback to anonymous:", authErr);
-                }
-
-                isFirestoreReady = true;
-                const statusBadge = document.getElementById('cloudStatusBadge');
-                const statusText = document.getElementById('cloudStatusText');
-                if (statusBadge) statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-                if (statusText) statusText.innerText = "Firebase 已同步";
-
-                listenToCloudDatabase();
-            } catch (err) {
-                console.error('Firebase Initialization Error:', err);
-                const statusBadge = document.getElementById('cloudStatusBadge');
-                const statusText = document.getElementById('cloudStatusText');
-                if (statusBadge) statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
-                if (statusText) statusText.innerText = "離線本機模式";
-            }
-        }
-
-        function setupDragAndDrop() {
-            const dropZone = document.getElementById('dropZone');
-            if (!dropZone) return;
-
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, preventDefaults, false);
-                document.body.addEventListener(eventName, preventDefaults, false);
-            });
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropZone.addEventListener(eventName, () => dropZone.classList.add('bg-blue-100', 'border-blue-500'), false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, () => dropZone.classList.remove('bg-blue-100', 'border-blue-500'), false);
-            });
-
-            dropZone.addEventListener('drop', (e) => {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                if (files && files.length > 0) {
-                    handleFileSelect({ target: { files: files } });
-                }
-            }, false);
-        }
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        // Firestore Real-Time Snapshot Listener
-        function listenToCloudDatabase() {
-            if (!isFirestoreReady || !db) return;
-            const recordsCol = collection(db, 'artifacts', appId, 'public', 'data', 'records');
-
-            onSnapshot(recordsCol, (snapshot) => {
-                if (snapshot.empty) {
-                    const defaultRecords = buildFullHistoricalDatabase();
-                    allRecords = defaultRecords;
-                    saveToLocalStorage(allRecords);
-                    saveBatchToCloud(defaultRecords);
-                } else {
-                    const cloudRecords = [];
-                    snapshot.forEach(docSnap => {
-                        const data = docSnap.data();
-                        cloudRecords.push({
-                            id: data.id || docSnap.id,
-                            date: normalizeDateString(data.date),
-                            station: String(data.station || '').trim(),
-                            arrived: parseNumber(data.arrived),
-                            unclosed: parseNumber(data.unclosed),
-                            rate: parseRateNumber(data.rate),
-                            unhandled: parseNumber(data.unhandled),
-                            forwardD4: parseNumber(data.forwardD4),
-                            reverseD3: parseNumber(data.reverseD3)
-                        });
-                    });
-                    allRecords = cloudRecords;
-                    saveToLocalStorage(allRecords);
-                }
-                populateDateDropdown();
-                renderBenchStationButtons();
-                filterData();
                 updateDatabaseStats();
-            }, (error) => {
-                console.error("Cloud snapshot listener error:", error);
-            });
-        }
+                populateDateDropdown();
+                filterData();
+                updateCloudStatusBadge(true, "雲端初次連線成功");
+            }
+        }, (error) => {
+            console.error("Firebase 連線被防火牆封鎖：", error);
+            updateCloudStatusBadge(false, "防火牆鎖定 (請檢查Rules設定)");
+        });
 
-        // Cloud Persistence Helpers
-        async function saveRecordToCloud(record) {
-            if (!isFirestoreReady || !db) return;
-            try {
-                const safeId = String(record.id || (record.date + '_' + record.station)).replace(/[\/.\s#$\[\]]/g, '_');
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'records', safeId);
-                await setDoc(docRef, record, { merge: true });
-            } catch (err) {
-                console.error("Cloud record save error:", err);
+        // 雲端即時連線燈號指示器
+        function updateCloudStatusBadge(isOnline, text) {
+            const badge = document.getElementById('cloudStatusBadge');
+            const icon = document.getElementById('cloudStatusIcon');
+            const txt = document.getElementById('cloudStatusText');
+            if(!badge) return;
+            badge.classList.remove('hidden');
+            if(txt) txt.innerText = text;
+            if(isOnline) {
+                badge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+                if(icon) icon.className = "fa-solid fa-cloud-check text-emerald-400";
+            } else {
+                badge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30";
+                if(icon) icon.className = "fa-solid fa-triangle-exclamation text-rose-400";
             }
         }
 
-        async function saveBatchToCloud(recordsList) {
-            if (!isFirestoreReady || !db || !recordsList || recordsList.length === 0) return;
-            try {
-                const batchSize = 400;
-                for (let i = 0; i < recordsList.length; i += batchSize) {
-                    const chunk = recordsList.slice(i, i + batchSize);
-                    const batch = writeBatch(db);
-                    chunk.forEach(r => {
-                        const safeId = String(r.id || (r.date + '_' + r.station)).replace(/[\/.\s#$\[\]]/g, '_');
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'records', safeId);
-                        batch.set(docRef, r, { merge: true });
-                    });
-                    await batch.commit();
-                }
-            } catch (err) {
-                console.error("Cloud batch save error:", err);
-            }
-        }
-
-        async function deleteRecordFromCloud(recordId) {
-            if (!isFirestoreReady || !db) return;
-            try {
-                const safeId = String(recordId).replace(/[\/.\s#$\[\]]/g, '_');
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'records', safeId);
-                await deleteDoc(docRef);
-            } catch (err) {
-                console.error("Cloud record delete error:", err);
-            }
-        }
-
-        async function deleteBatchFromCloud(recordsToDelete) {
-            if (!isFirestoreReady || !db || !recordsToDelete || recordsToDelete.length === 0) return;
-            try {
-                const batchSize = 400;
-                for (let i = 0; i < recordsToDelete.length; i += batchSize) {
-                    const chunk = recordsToDelete.slice(i, i + batchSize);
-                    const batch = writeBatch(db);
-                    chunk.forEach(r => {
-                        const safeId = String(r.id || (r.date + '_' + r.station)).replace(/[\/.\s#$\[\]]/g, '_');
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'records', safeId);
-                        batch.delete(docRef, r);
-                    });
-                    await batch.commit();
-                }
-            } catch (err) {
-                console.error("Cloud batch delete error:", err);
-            }
-        }
-
-        function parseNumber(val) {
-            if (val === undefined || val === null) return 0;
-            const str = String(val).replace(/,/g, '').trim();
-            const num = parseInt(str, 10);
-            return isNaN(num) ? 0 : num;
-        }
-
-        function parseRateNumber(val) {
-            if (val === undefined || val === null || val === '') return null;
-            if (typeof val === 'number') {
-                if (val > 0 && val <= 1.0) return parseFloat((val * 100).toFixed(2));
-                return parseFloat(val.toFixed(2));
-            }
-            let str = String(val).replace(/%/g, '').replace(/,/g, '').trim();
-            let num = parseFloat(str);
-            if (isNaN(num)) return null;
-            if (num > 0 && num <= 1.0 && String(val).includes('.')) {
-                return parseFloat((num * 100).toFixed(2));
-            }
-            return parseFloat(num.toFixed(2));
+        // 4. 物流課別與屬性別快速篩選判斷矩陣
+        function getStationSection(station) {
+            const st = String(station).toUpperCase().trim();
+            if (st.startsWith('NS1') || st.startsWith('NS2')) return '北一課';
+            if (st.startsWith('NS3') || st.startsWith('NS4')) return '北二課';
+            if (st.startsWith('NS5') || st.startsWith('NS6')) return '北三課';
+            if (st.startsWith('KC')) return '中課';
+            if (st.startsWith('NT1') || st.startsWith('NT2')) return '南一課';
+            if (st.startsWith('NT3')) return '南二課';
+            return 'DC專案';
         }
 
         function getStationType(station) {
-            const clean = String(station || '').trim();
-            if (/[\u4e00-\u9fa5]/.test(clean) || clean.includes('-')) {
-                return '委外';
-            }
-            return '自配';
-        }
-
-        function getStationSection(station) {
-            const clean = String(station || '').trim();
-            if (STATION_SECTION_MAP && STATION_SECTION_MAP[clean]) {
-                return STATION_SECTION_MAP[clean];
-            }
-            return 'DC專案';
+            return String(station).toUpperCase().includes('NS') ? '自配' : '委外';
         }
 
         function buildFullHistoricalDatabase() {
             let records = [];
             let idCounter = 1;
-
-            if (!baseRecords20260725 || !Array.isArray(baseRecords20260725)) {
-                return records;
-            }
-
             baseRecords20260725.forEach((b) => {
                 const baseRate = b.rate !== undefined ? b.rate : (b.arrived > 0 ? ((b.arrived - b.unclosed) / b.arrived) * 100 : 100);
                 records.push({
@@ -1017,87 +365,29 @@
                     station: b.station,
                     arrived: b.arrived,
                     unclosed: b.unclosed,
-                    rate: baseRate,
+                    rate: parseFloat(Number(baseRate).toFixed(1)),
                     unhandled: b.unhandled,
                     forwardD4: b.forwardD4,
                     reverseD3: b.reverseD3
                 });
             });
-
             return records;
         }
 
+        // 日期標準格式校正器
         function normalizeDateString(dateStr) {
             if (!dateStr || dateStr === 'ALL') return dateStr;
-            
-            if (typeof dateStr === 'number' && dateStr > 30000) {
-                const d = new Date((dateStr - 25569) * 86400 * 1000);
-                const y = d.getUTCFullYear();
-                const m = String(d.getUTCMonth() + 1).padStart(2, '0');
-                const day = String(d.getUTCDate()).padStart(2, '0');
-                return `${y}-${m}-${day}`;
-            }
-
             let cleanStr = String(dateStr).trim().replace(/年|\/|\./g, '-').replace(/月/g, '-').replace(/日/g, '');
-            
-            let mmddMatch = cleanStr.match(/^(\d{2})(\d{2})/);
-            if (mmddMatch) {
-                const m = parseInt(mmddMatch[1], 10);
-                const d = parseInt(mmddMatch[2], 10);
-                if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
-                    return `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                }
-            }
-
             if (/^\d{8}$/.test(cleanStr)) {
                 return `${cleanStr.substring(0,4)}-${cleanStr.substring(4,6)}-${cleanStr.substring(6,8)}`;
-            }
-
-            const parts = cleanStr.split('-').filter(p => p.length > 0);
-            if (parts.length === 3) {
-                let y = parts[0];
-                if (y.length === 2) y = '20' + y;
-                const m = parts[1].padStart(2, '0');
-                const d = parts[2].padStart(2, '0');
-                return `${y}-${m}-${d}`;
-            } else if (parts.length === 2) {
-                const m = parts[0].padStart(2, '0');
-                const d = parts[1].padStart(2, '0');
-                return `2026-${m}-${d}`;
             }
             return cleanStr;
         }
 
         function extractDateFromFilename(filename) {
             if (!filename) return null;
-            const cleanName = filename.trim();
-
-            let match = cleanName.match(/(20\d{2})[-_./]?([0-1]\d)[-_./]?([0-3]\d)/);
-            if (match) {
-                const y = match[1];
-                const m = match[2];
-                const d = match[3];
-                if (parseInt(m, 10) >= 1 && parseInt(m, 10) <= 12 && parseInt(d, 10) >= 1 && parseInt(d, 10) <= 31) {
-                    return `${y}-${m}-${d}`;
-                }
-            }
-
-            match = cleanName.match(/(?:^|[^0-9])([0-1]\d)([0-3]\d)(?:[^0-9]|$)/);
-            if (match) {
-                const m = parseInt(match[1], 10);
-                const d = parseInt(match[2], 10);
-                if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
-                    return `2026-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                }
-            }
-
-            match = cleanName.match(/([0-1]?\d)月([0-3]?\d)日?/);
-            if (match) {
-                const m = match[1].padStart(2, '0');
-                const d = match[2].padStart(2, '0');
-                return `2026-${m}-${d}`;
-            }
-
+            let match = filename.match(/(20\d{2})[-_./]?([0-1]\d)[-_./]?([0-3]\d)/);
+            if (match) return `${match[1]}-${match[2]}-${match[3]}`;
             return null;
         }
 
@@ -1112,1380 +402,43 @@
             return { dayNum: -1, name: '未知' };
         }
 
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toastNotification');
-            const icon = document.getElementById('toastIcon');
-            const msg = document.getElementById('toastMessage');
-            if (!toast || !msg) return;
-
-            msg.innerText = message;
-            if (isError) {
-                icon.className = "fa-solid fa-triangle-exclamation text-rose-400 text-lg";
-            } else {
-                icon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
-            }
-            toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 3500);
-        }
-
-        function openModal(id) {
-            const el = document.getElementById(id);
-            if (el) el.classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('hidden');
-        }
-
-        function updateDatabaseStats() {
-            const totalRecEl = document.getElementById('dbTotalRecords');
-            const totalDatesEl = document.getElementById('dbTotalDates');
-            const totalStEl = document.getElementById('dbTotalStations');
-
-            if (totalRecEl) totalRecEl.innerText = allRecords.length.toLocaleString();
-            if (totalDatesEl) totalDatesEl.innerText = new Set(allRecords.map(r => r.date)).size;
-            if (totalStEl) totalStEl.innerText = new Set(allRecords.map(r => r.station)).size;
-
-            renderDbMonthBreakdown();
-        }
-
-        function renderDbMonthBreakdown() {
-            const container = document.getElementById('dbMonthListContainer');
-            if (!container) return;
-
-            container.innerHTML = '';
-
-            const monthMap = {};
-            allRecords.forEach(r => {
-                if (!r.date || r.date === 'ALL') return;
-                const normDate = normalizeDateString(r.date);
-                r.date = normDate;
-                const monthKey = normDate.substring(0, 7);
-                if (!monthMap[monthKey]) monthMap[monthKey] = {};
-                if (!monthMap[monthKey][normDate]) monthMap[monthKey][normDate] = 0;
-                monthMap[monthKey][normDate]++;
-            });
-
-            const sortedMonths = Object.keys(monthMap).sort().reverse();
-
-            if (sortedMonths.length === 0) {
-                container.innerHTML = `<div class="text-center py-4 text-slate-400">目前資料庫無收錄日期</div>`;
-                return;
-            }
-
-            sortedMonths.forEach(mKey => {
-                const datesObj = monthMap[mKey];
-                const datesList = Object.keys(datesObj).sort().reverse();
-                let monthTotalCount = 0;
-                datesList.forEach(d => monthTotalCount += datesObj[d]);
-
-                const parts = mKey.split('-');
-                const monthDisplay = `${parts[0]} 年 ${parts[1]} 月`;
-
-                const monthCard = document.createElement('div');
-                monthCard.className = "border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50";
-
-                let datesHtml = datesList.map(d => {
-                    const dayInfo = getDayOfWeekInfo(d);
-                    const count = datesObj[d];
-                    return `
-                        <div class="flex items-center justify-between bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-regular fa-calendar-check text-indigo-500"></i>
-                                <span class="font-semibold text-slate-800">${d}</span>
-                                <span class="px-1.5 py-0.2 bg-indigo-50 text-indigo-700 rounded text-[10px] font-bold">${dayInfo.name}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-slate-500 font-medium">${count} 筆資料</span>
-                                <button onclick="deleteDateRecords('${d}')" class="text-slate-400 hover:text-rose-600 transition p-1" title="刪除此日所有資料">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                monthCard.innerHTML = `
-                    <details class="group" open>
-                        <summary class="flex justify-between items-center p-2.5 bg-slate-100 hover:bg-slate-200/80 cursor-pointer font-bold text-slate-700 select-none transition">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-folder-closed text-indigo-600 group-open:hidden"></i>
-                                <i class="fa-solid fa-folder-open text-indigo-600 hidden group-open:inline"></i>
-                                <span>${monthDisplay}</span>
-                                <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-full text-[10px] font-bold">${datesList.length} 天 / 共 ${monthTotalCount} 筆</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform"></i>
-                        </summary>
-                        <div class="p-2 space-y-1.5 bg-slate-50">
-                            ${datesHtml}
-                        </div>
-                    </details>
-                `;
-                container.appendChild(monthCard);
-            });
-        }
-
-        function deleteDateRecords(dateStr) {
-            const recordsToDelete = allRecords.filter(r => r.date === dateStr);
-            allRecords = allRecords.filter(r => r.date !== dateStr);
-            saveToLocalStorage(allRecords);
-            deleteBatchFromCloud(recordsToDelete);
-
-            populateDateDropdown();
-            renderBenchStationButtons();
-            filterData();
-            updateDatabaseStats();
-            showToast(`已成功移除日期 ${dateStr} 之所有紀錄`);
-        }
-
-        function populateDateDropdown() {
-            const dateSelect = document.getElementById('dateSelect');
-            if (!dateSelect) return;
-
-            const currentValue = dateSelect.value || '2026-07-25';
-            const uniqueDates = Array.from(new Set(allRecords.map(r => r.date))).sort().reverse();
-            
-            dateSelect.innerHTML = '<option value="ALL">跨日總累計 (全部日期)</option>';
-            
-            uniqueDates.forEach(d => {
-                const info = getDayOfWeekInfo(d);
-                const opt = document.createElement('option');
-                opt.value = d;
-                opt.innerText = `${d} (${info.name})`;
-                dateSelect.appendChild(opt);
-            });
-            
-            if (Array.from(dateSelect.options).some(o => o.value === currentValue)) {
-                dateSelect.value = currentValue;
-            } else if (uniqueDates.length > 0) {
-                dateSelect.value = uniqueDates[0];
-            }
-        }
-
-        function setSectionFilter(sec) {
-            currentSectionFilter = sec;
-            document.querySelectorAll('.section-tag-btn').forEach(btn => {
-                if (btn.innerText.includes(sec) || (sec === 'ALL' && btn.innerText.includes('全部'))) {
-                    btn.className = "section-tag-btn active px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-600 text-white shadow-xs";
-                } else {
-                    btn.className = "section-tag-btn px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200";
-                }
-            });
-            filterData();
-        }
-
-        function setTypeFilter(type) {
-            currentTypeFilter = type;
-            document.querySelectorAll('.type-tag-btn').forEach(btn => {
-                if (btn.innerText.includes(type) || (type === 'ALL' && btn.innerText.includes('全部'))) {
-                    btn.className = "type-tag-btn active px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-600 text-white shadow-xs";
-                } else {
-                    btn.className = "type-tag-btn px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200";
-                }
-            });
-            filterData();
-        }
-
-        function toggleBenchmarkPanel() {
-            isBenchmarkPanelOpen = !isBenchmarkPanelOpen;
-            const panel = document.getElementById('historyBenchmarkPanel');
-            const btnText = document.getElementById('toggleBenchBtnText');
-            const btn = document.getElementById('toggleBenchBtn');
-
-            if (!panel || !btnText || !btn) return;
-
-            if (isBenchmarkPanelOpen) {
-                panel.classList.remove('hidden');
-                btnText.innerText = "多站歷史比對看板 [已開啟]";
-                btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition border flex items-center gap-1.5 bg-slate-800 text-white border-slate-700 shadow-sm";
-            } else {
-                panel.classList.add('hidden');
-                btnText.innerText = "多站歷史比對看板 [已關閉]";
-                btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition border flex items-center gap-1.5 bg-white text-slate-700 border-slate-300 hover:bg-slate-50 shadow-2xs";
-            }
-        }
-
+        // 5. 核心視圖與數據矩陣過濾、Chart.js 圖表繪製
         function filterData() {
-            const dateSelectEl = document.getElementById('dateSelect');
-            const selectedDate = dateSelectEl ? dateSelectEl.value : '2026-07-25';
-            
-            let filtered = allRecords.filter(r => {
-                const matchDate = (selectedDate === 'ALL' || r.date === selectedDate);
-                const section = getStationSection(r.station);
-                const type = getStationType(r.station);
-                const matchSection = (currentSectionFilter === 'ALL' || section === currentSectionFilter);
-                const matchType = (currentTypeFilter === 'ALL' || type === currentTypeFilter);
-                return matchDate && matchSection && matchType;
-            });
+            const selectEl = document.getElementById('dateSelect');
+            if(!selectEl) return;
+            const targetDate = selectEl.value;
 
-            let processedRecords = [];
-            if (selectedDate === 'ALL') {
-                const map = {};
-                filtered.forEach(r => {
-                    if (!map[r.station]) {
-                        map[r.station] = {
-                            id: r.station,
-                            date: 'ALL',
-                            station: r.station,
-                            arrived: 0,
-                            unclosed: 0,
-                            unhandled: 0,
-                            forwardD4: 0,
-                            reverseD3: 0,
-                            rateSum: 0,
-                            rateCount: 0
-                        };
-                    }
-                    map[r.station].arrived += r.arrived;
-                    map[r.station].unclosed += r.unclosed;
-                    map[r.station].unhandled += r.unhandled;
-                    map[r.station].forwardD4 += r.forwardD4;
-                    map[r.station].reverseD3 += r.reverseD3;
-                    if (r.rate !== undefined && r.rate !== null) {
-                        map[r.station].rateSum += r.rate;
-                        map[r.station].rateCount += 1;
-                    }
-                });
-                processedRecords = Object.values(map).map(item => {
-                    const rec = { ...item };
-                    if (rec.rateCount > 0) {
-                        rec.rate = rec.rateSum / rec.rateCount;
-                    }
-                    delete rec.rateSum;
-                    delete rec.rateCount;
-                    return rec;
-                });
-            } else {
-                processedRecords = filtered.map(r => ({ ...r }));
+            let filtered = allRecords;
+            if(targetDate && targetDate !== 'ALL') {
+                filtered = filtered.filter(r => r.date === targetDate);
+            }
+            if(currentSectionFilter !== 'ALL') {
+                filtered = filtered.filter(r => getStationSection(r.station) === currentSectionFilter);
+            }
+            if(currentTypeFilter !== 'ALL') {
+                filtered = filtered.filter(r => getStationType(r.station) === currentTypeFilter);
             }
 
-            processedRecords.forEach(r => {
-                if (r.rate === undefined || r.rate === null) {
-                    r.rate = r.arrived > 0 ? ((r.arrived - r.unclosed) / r.arrived) * 100 : 100;
-                }
-                r.handlingRate = r.unclosed > 0 ? ((r.unclosed - r.unhandled) / r.unclosed) * 100 : 100;
-                r.overtimeTotal = r.forwardD4 + r.reverseD3;
-                r.section = getStationSection(r.station);
-                r.type = getStationType(r.station);
-            });
-
-            updateKPICards(processedRecords);
-            renderTable(processedRecords);
-            renderCharts(processedRecords);
-            updateBenchmarkAnalysis();
-            updateDatabaseStats();
+            renderMainTable(filtered);
+            renderSystemCharts(filtered);
         }
 
-        function updateKPICards(records) {
-            let totalArrived = 0;
-            let totalUnclosed = 0;
-            let totalUnhandled = 0;
-            let forwardD4 = 0;
-            let reverseD3 = 0;
-            let unmetCount = 0;
-
-            records.forEach(r => {
-                totalArrived += r.arrived;
-                totalUnclosed += r.unclosed;
-                totalUnhandled += r.unhandled;
-                forwardD4 += r.forwardD4;
-                reverseD3 += r.reverseD3;
-                if (r.rate < 90) unmetCount++;
-            });
-
-            const overallRate = totalArrived > 0 ? ((totalArrived - totalUnclosed) / totalArrived) * 100 : 100;
-            const overallHandlingRate = totalUnclosed > 0 ? ((totalUnclosed - totalUnhandled) / totalUnclosed) * 100 : 100;
-
-            const elTotalArrived = document.getElementById('statTotalArrived');
-            const elTotalUnclosed = document.getElementById('statTotalUnclosed');
-            const elOverallRate = document.getElementById('statOverallRate');
-            const elUnmetCount = document.getElementById('statUnmetCount');
-            const elTotalUnhandled = document.getElementById('statTotalUnhandled');
-            const elHandlingRate = document.getElementById('statHandlingRate');
-            const elForwardD4 = document.getElementById('statForwardD4');
-            const elReverseD3 = document.getElementById('statReverseD3');
-            const elTotalOvertime = document.getElementById('statTotalOvertime');
-
-            if (elTotalArrived) elTotalArrived.innerText = totalArrived.toLocaleString();
-            if (elTotalUnclosed) elTotalUnclosed.innerText = totalUnclosed.toLocaleString();
-            if (elOverallRate) elOverallRate.innerText = `${overallRate.toFixed(1)}%`;
-            if (elUnmetCount) elUnmetCount.innerText = `未達90%標準: ${unmetCount} 站`;
-            if (elTotalUnhandled) elTotalUnhandled.innerText = totalUnhandled.toLocaleString();
-            if (elHandlingRate) elHandlingRate.innerText = `整體處理率: ${overallHandlingRate.toFixed(1)}%`;
-            if (elForwardD4) elForwardD4.innerText = forwardD4.toLocaleString();
-            if (elReverseD3) elReverseD3.innerText = reverseD3.toLocaleString();
-            if (elTotalOvertime) elTotalOvertime.innerText = `超時總計: ${(forwardD4 + reverseD3).toLocaleString()} 件`;
-        }
-
-        function renderBenchStationButtons() {
-            const btnContainer = document.getElementById('benchSectionBtnContainer');
-            const pillsContainer = document.getElementById('benchStationPillsContainer');
-            if (!btnContainer || !pillsContainer) return;
-
-            btnContainer.innerHTML = '';
-            pillsContainer.innerHTML = '';
-
-            const uniqueStations = Array.from(new Set(allRecords.map(r => r.station))).sort();
-
-            const grouped = {};
-            const secOrder = SECTION_ORDER;
-
-            secOrder.forEach(sec => grouped[sec] = []);
-            uniqueStations.forEach(st => {
-                const sec = getStationSection(st);
-                if (!grouped[sec]) grouped[sec] = [];
-                grouped[sec].push(st);
-            });
-
-            const sectionsList = ['ALL', ...secOrder];
-            sectionsList.forEach(sec => {
-                let countLabel = '';
-                if (sec === 'ALL') {
-                    countLabel = `${selectedBenchmarkStations.length}/${uniqueStations.length}`;
-                } else {
-                    const totalInSec = (grouped[sec] || []).length;
-                    const selInSec = (grouped[sec] || []).filter(s => selectedBenchmarkStations.includes(s)).length;
-                    countLabel = `${selInSec}/${totalInSec}`;
-                }
-
-                const isActive = activeBenchSection === sec;
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.onclick = () => {
-                    activeBenchSection = sec;
-                    renderBenchStationButtons();
-                };
-                
-                if (isActive) {
-                    btn.className = "px-2.5 py-1 text-xs font-bold bg-indigo-600 text-white rounded-lg shadow-xs flex items-center gap-1.5 transition";
-                } else {
-                    btn.className = "px-2.5 py-1 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200";
-                }
-                
-                btn.innerHTML = `<span>${sec === 'ALL' ? '全部課別' : sec}</span> <span class="${isActive ? 'bg-indigo-700 text-white' : 'bg-slate-200 text-slate-600'} text-[10px] px-1.5 py-0.2 rounded-full font-bold">${countLabel}</span>`;
-                btnContainer.appendChild(btn);
-            });
-
-            const secLabelEl = document.getElementById('activeSecTitleLabel');
-            if (secLabelEl) secLabelEl.innerText = `當前課別：${activeBenchSection === 'ALL' ? '全部課別' : activeBenchSection}`;
-
-            let visibleStations = [];
-            if (activeBenchSection === 'ALL') {
-                visibleStations = uniqueStations;
-            } else {
-                visibleStations = grouped[activeBenchSection] || [];
-            }
-
-            visibleStations.forEach(st => {
-                const isSelected = selectedBenchmarkStations.includes(st);
-                const stType = getStationType(st);
-
-                const pill = document.createElement('div');
-                pill.className = `flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition select-none ${
-                    isSelected 
-                        ? 'bg-indigo-600 text-white shadow-xs border border-indigo-700' 
-                        : 'bg-slate-50 hover:bg-indigo-50/70 text-slate-700 border border-slate-200 hover:border-indigo-200'
-                }`;
-
-                pill.innerHTML = `
-                    <button type="button" onclick="toggleBenchStation('${st.replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 focus:outline-none">
-                        <i class="fa-solid ${isSelected ? 'fa-square-check text-amber-300' : 'fa-square text-slate-300'} text-xs"></i>
-                        <span>${st}</span>
-                        <span class="text-[9px] px-1 py-0.2 rounded ${
-                            isSelected 
-                                ? 'bg-indigo-700 text-indigo-100' 
-                                : (stType === '自配' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700')
-                        }">${stType}</span>
-                    </button>
-                    <button type="button" onclick="selectSingleBenchStation('${st.replace(/'/g, "\\'")}')" title="僅看此站 (單站分析)" class="ml-1 px-1.5 py-0.2 text-[10px] rounded ${
-                        isSelected ? 'bg-indigo-500 hover:bg-indigo-400 text-white' : 'bg-slate-200 hover:bg-indigo-200 text-slate-600 hover:text-indigo-900'
-                    } transition font-bold">
-                        單選
-                    </button>
-                `;
-                pillsContainer.appendChild(pill);
-            });
-
-            const benchCountEl = document.getElementById('benchStationCount');
-            if (benchCountEl) benchCountEl.innerText = `已選 ${selectedBenchmarkStations.length} 站`;
-        }
-
-        function toggleBenchStation(st) {
-            if (selectedBenchmarkStations.includes(st)) {
-                selectedBenchmarkStations = selectedBenchmarkStations.filter(s => s !== st);
-            } else {
-                selectedBenchmarkStations.push(st);
-            }
-            renderBenchStationButtons();
-            updateBenchmarkAnalysis();
-        }
-
-        function selectSingleBenchStation(st) {
-            selectedBenchmarkStations = [st];
-            renderBenchStationButtons();
-            updateBenchmarkAnalysis();
-        }
-
-        function selectActiveSectionStations(selectState) {
-            const uniqueStations = Array.from(new Set(allRecords.map(r => r.station)));
-            let targetStations = [];
-
-            if (activeBenchSection === 'ALL') {
-                targetStations = uniqueStations;
-            } else {
-                targetStations = uniqueStations.filter(st => getStationSection(st) === activeBenchSection);
-            }
-
-            if (selectState) {
-                targetStations.forEach(st => {
-                    if (!selectedBenchmarkStations.includes(st)) selectedBenchmarkStations.push(st);
-                });
-            } else {
-                selectedBenchmarkStations = selectedBenchmarkStations.filter(st => !targetStations.includes(st));
-            }
-
-            renderBenchStationButtons();
-            updateBenchmarkAnalysis();
-        }
-
-        function selectAllBenchStations(status) {
-            if (status) {
-                selectedBenchmarkStations = Array.from(new Set(allRecords.map(r => r.station)));
-            } else {
-                selectedBenchmarkStations = [];
-            }
-            renderBenchStationButtons();
-            updateBenchmarkAnalysis();
-        }
-
-        function selectTypeBenchStations(type) {
-            selectedBenchmarkStations = Array.from(new Set(allRecords.filter(r => getStationType(r.station) === type).map(r => r.station)));
-            renderBenchStationButtons();
-            updateBenchmarkAnalysis();
-        }
-
-        function updateBenchmarkAnalysis() {
-            const dateSelectEl = document.getElementById('dateSelect');
-            const currentDateVal = dateSelectEl ? dateSelectEl.value : '2026-07-25';
-            const dayInfo = getDayOfWeekInfo(currentDateVal);
-
-            const uniqueStations = Array.from(new Set(allRecords.map(r => r.station)));
-            
-            const scopeStations = uniqueStations.filter(st => {
-                const secMatch = (currentSectionFilter === 'ALL' || getStationSection(st) === currentSectionFilter);
-                const typeMatch = (currentTypeFilter === 'ALL' || getStationType(st) === currentTypeFilter);
-                return secMatch && typeMatch;
-            });
-
-            let targetStations = [];
-            if (selectedBenchmarkStations.length === 0) {
-                targetStations = scopeStations;
-            } else {
-                targetStations = selectedBenchmarkStations.filter(st => scopeStations.includes(st));
-                if (targetStations.length === 0) {
-                    targetStations = scopeStations;
-                }
-            }
-
-            const benchCountEl = document.getElementById('benchStationCount');
-            if (benchCountEl) benchCountEl.innerText = `已選 ${selectedBenchmarkStations.length} 站`;
-
-            if (targetStations.length === 0 || allRecords.length === 0) {
-                document.getElementById('benchCurrentRate').innerText = '0.0%';
-                document.getElementById('benchAvgRate').innerText = '0.0%';
-                document.getElementById('benchMaxRate').innerText = '0.0%';
-                document.getElementById('benchMinRate').innerText = '0.0%';
-
-                document.getElementById('benchCurrentArrived').innerText = '0';
-                document.getElementById('benchAvgArrived').innerText = '0';
-                document.getElementById('benchMaxArrived').innerText = '0';
-                document.getElementById('benchMinArrived').innerText = '0';
-
-                document.getElementById('benchCurrentUnhandled').innerText = '0';
-                document.getElementById('benchAvgUnhandled').innerText = '0';
-                document.getElementById('benchMaxUnhandled').innerText = '0';
-                document.getElementById('benchMinUnhandled').innerText = '0';
-
-                renderBenchTrendChart([]);
-                return;
-            }
-
-            let currentArrived = 0;
-            let currentUnclosed = 0;
-            let currentUnhandled = 0;
-            let currentRateSum = 0;
-            let currentRateCount = 0;
-
-            const currentRecords = allRecords.filter(r => (currentDateVal === 'ALL' || r.date === currentDateVal) && targetStations.includes(r.station));
-            currentRecords.forEach(r => {
-                currentArrived += r.arrived;
-                currentUnclosed += r.unclosed;
-                currentUnhandled += r.unhandled;
-                if (r.rate !== undefined && r.rate !== null) {
-                    currentRateSum += r.rate;
-                    currentRateCount += 1;
-                }
-            });
-
-            const currentRate = currentRateCount > 0 
-                ? (currentRateSum / currentRateCount) 
-                : (currentArrived > 0 ? ((currentArrived - currentUnclosed) / currentArrived) * 100 : 100);
-
-            let benchRecords = allRecords.filter(r => targetStations.includes(r.station));
-            let availableDates = Array.from(new Set(benchRecords.map(r => r.date))).sort();
-
-            if (currentDateVal !== 'ALL') {
-                const targetDayNum = dayInfo.dayNum;
-                if (targetDayNum !== -1) {
-                    availableDates = availableDates.filter(d => {
-                        const dInfo = getDayOfWeekInfo(d);
-                        return dInfo.dayNum === targetDayNum && d <= currentDateVal;
-                    });
-                } else {
-                    availableDates = availableDates.filter(d => d <= currentDateVal);
-                }
-                if (availableDates.length > 16) {
-                    availableDates = availableDates.slice(-16);
-                }
-            } else {
-                if (availableDates.length > 16) {
-                    availableDates = availableDates.slice(-16);
-                }
-            }
-
-            const dateGroups = {};
-            availableDates.forEach(d => {
-                dateGroups[d] = { arrived: 0, unclosed: 0, unhandled: 0, rateSum: 0, rateCount: 0 };
-            });
-
-            benchRecords.forEach(r => {
-                if (dateGroups[r.date]) {
-                    dateGroups[r.date].arrived += r.arrived;
-                    dateGroups[r.date].unclosed += r.unclosed;
-                    dateGroups[r.date].unhandled += r.unhandled;
-                    if (r.rate !== undefined && r.rate !== null) {
-                        dateGroups[r.date].rateSum += r.rate;
-                        dateGroups[r.date].rateCount += 1;
-                    }
-                }
-            });
-
-            const dateStats = availableDates.map(d => {
-                const item = dateGroups[d];
-                const rate = item.rateCount > 0 
-                    ? (item.rateSum / item.rateCount) 
-                    : (item.arrived > 0 ? ((item.arrived - item.unclosed) / item.arrived) * 100 : 100);
-                return { date: d, rate, arrived: item.arrived, unclosed: item.unclosed, unhandled: item.unhandled };
-            });
-
-            const badgeEl = document.getElementById('benchDayOfWeekBadge');
-            if (badgeEl) {
-                if (currentDateVal === 'ALL') {
-                    badgeEl.innerText = `📅 歷史比對：全資料庫實際累計比對 (共 ${dateStats.length} 期)`;
-                    badgeEl.className = "px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-md text-xs font-semibold border border-slate-300";
-                } else {
-                    badgeEl.innerText = `📅 依選取日往前比對【${dayInfo.name}】(共 ${dateStats.length} 期實際資料)`;
-                    badgeEl.className = "px-2.5 py-0.5 bg-amber-100 text-amber-900 rounded-md text-xs font-bold border border-amber-300 shadow-2xs";
-                }
-            }
-
-            const rates = dateStats.map(s => s.rate);
-            const arrivedArr = dateStats.map(s => s.arrived);
-            const unclosedArr = dateStats.map(s => s.unclosed);
-
-            const totalArrivedSum = arrivedArr.reduce((a,b)=>a+b,0);
-            const totalUnclosedSum = unclosedArr.reduce((a,b)=>a+b,0);
-
-            // Filter out 0% completion rate for average and minimum
-            const validRates = rates.filter(r => r > 0);
-
-            const avgRate = validRates.length > 0 ? (validRates.reduce((a,b)=>a+b,0) / validRates.length) : 0;
-            const maxRate = rates.length > 0 ? Math.max(...rates) : 0;
-            const minRate = validRates.length > 0 ? Math.min(...validRates) : 0;
-
-            const avgArrived = arrivedArr.length > 0 ? Math.round(totalArrivedSum / arrivedArr.length) : 0;
-            const maxArrived = arrivedArr.length > 0 ? Math.max(...arrivedArr) : 0;
-            const minArrived = arrivedArr.length > 0 ? Math.min(...arrivedArr) : 0;
-
-            const avgUnclosed = unclosedArr.length > 0 ? Math.round(totalUnclosedSum / unclosedArr.length) : 0;
-            const maxUnclosed = unclosedArr.length > 0 ? Math.max(...unclosedArr) : 0;
-            const minUnclosed = unclosedArr.length > 0 ? Math.min(...unclosedArr) : 0;
-
-            document.getElementById('benchCurrentRate').innerText = `${currentRate.toFixed(1)}%`;
-            document.getElementById('benchAvgRate').innerText = `${avgRate.toFixed(1)}%`;
-            document.getElementById('benchMaxRate').innerText = `${maxRate.toFixed(1)}%`;
-            document.getElementById('benchMinRate').innerText = `${minRate.toFixed(1)}%`;
-
-            document.getElementById('benchCurrentArrived').innerText = currentArrived.toLocaleString();
-            document.getElementById('benchAvgArrived').innerText = avgArrived.toLocaleString();
-            document.getElementById('benchMaxArrived').innerText = maxArrived.toLocaleString();
-            document.getElementById('benchMinArrived').innerText = minArrived.toLocaleString();
-
-            document.getElementById('benchCurrentUnhandled').innerText = currentUnclosed.toLocaleString();
-            document.getElementById('benchAvgUnhandled').innerText = avgUnclosed.toLocaleString();
-            document.getElementById('benchMaxUnhandled').innerText = maxUnclosed.toLocaleString();
-            document.getElementById('benchMinUnhandled').innerText = minUnclosed.toLocaleString();
-
-            renderBenchTrendChart(dateStats);
-        }
-
-        function renderBenchTrendChart(dateStats) {
-            const canvasEl = document.getElementById('benchTrendChart');
-            if (!canvasEl) return;
-            const ctx = canvasEl.getContext('2d');
-            
-            if (benchTrendChartInstance) {
-                benchTrendChartInstance.destroy();
-                benchTrendChartInstance = null;
-            }
-
-            if (!dateStats || dateStats.length === 0) return;
-
-            const labels = dateStats.map(s => {
-                const info = getDayOfWeekInfo(s.date);
-                const parts = s.date.split('-');
-                const shortDate = parts.length === 3 ? `${parts[1]}/${parts[2]}` : s.date;
-                const shortDay = info.name.replace('週', '');
-                return `${shortDate} (${shortDay})`;
-            });
-            const rates = dateStats.map(s => parseFloat(s.rate.toFixed(1)));
-            const unclosedCounts = dateStats.map(s => s.unclosed);
-
-            const validRates = rates.filter(r => r > 0);
-            const avgRate = validRates.length > 0 ? (validRates.reduce((a,b)=>a+b,0) / validRates.length) : 0;
-            const avgLine = dateStats.map(() => parseFloat(avgRate.toFixed(1)));
-
-            const chartPlugins = (typeof ChartDataLabels !== 'undefined') ? [ChartDataLabels] : [];
-
-            const maxBarVal = Math.max(...unclosedCounts, 10);
-            const y1Max = Math.ceil(maxBarVal * 2.1);
-
-            const minRateVal = rates.length > 0 ? Math.min(...rates) : 0;
-            const maxRateVal = rates.length > 0 ? Math.max(...rates) : 100;
-            
-            let y2Min = Math.max(0, Math.floor((minRateVal - 4) / 2) * 2);
-            let y2Max = Math.min(100, Math.ceil((maxRateVal + 2) / 2) * 2);
-            if (y2Max - y2Min < 10) y2Min = Math.max(0, y2Max - 10);
-            if (y2Max <= y2Min) y2Max = Math.min(100, y2Min + 10);
-
-            benchTrendChartInstance = new Chart(ctx, {
-                type: 'bar',
-                plugins: chartPlugins,
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            type: 'bar',
-                            label: '未結件數',
-                            data: unclosedCounts,
-                            backgroundColor: 'rgba(245, 158, 11, 0.65)',
-                            borderColor: 'rgba(245, 158, 11, 0.9)',
-                            borderWidth: 1,
-                            borderRadius: 3,
-                            yAxisID: 'y1',
-                            order: 2,
-                            datalabels: {
-                                display: true,
-                                align: 'top',
-                                anchor: 'end',
-                                offset: 1,
-                                color: '#d97706',
-                                font: { weight: 'bold', size: 8 },
-                                formatter: (v) => v > 0 ? v.toLocaleString() : ''
-                            }
-                        },
-                        {
-                            type: 'line',
-                            label: '同星期配結率 (%)',
-                            data: rates,
-                            borderColor: '#4f46e5',
-                            backgroundColor: '#4f46e5',
-                            borderWidth: 2,
-                            tension: 0.25,
-                            pointRadius: 3.5,
-                            pointHoverRadius: 5,
-                            pointBackgroundColor: '#4f46e5',
-                            yAxisID: 'y2',
-                            order: 1,
-                            datalabels: {
-                                align: 'top',
-                                anchor: 'center',
-                                offset: function(context) {
-                                    return context.dataIndex % 2 === 0 ? 2 : 18;
-                                },
-                                color: '#1e1b4b',
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                borderColor: '#c7d2fe',
-                                borderWidth: 1,
-                                borderRadius: 3,
-                                padding: { top: 1, bottom: 1, left: 2, right: 2 },
-                                font: { weight: 'bold', size: 8 },
-                                formatter: (v) => v.toFixed(1) + '%'
-                            }
-                        },
-                        {
-                            type: 'line',
-                            label: '歷史平均水位 (%)',
-                            data: avgLine,
-                            borderColor: '#10b981',
-                            borderWidth: 1.5,
-                            borderDash: [3, 3],
-                            pointRadius: 0,
-                            fill: false,
-                            yAxisID: 'y2',
-                            order: 0,
-                            datalabels: {
-                                display: false
-                            }
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: { 
-                        legend: { position: 'top', labels: { font: { size: 10 }, usePointStyle: true, boxWidth: 8 } },
-                        datalabels: {
-                            display: true
-                        }
-                    },
-                    scales: {
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: '件數', font: { size: 9 } },
-                            grid: { color: '#f1f5f9' },
-                            beginAtZero: true,
-                            max: y1Max
-                        },
-                        y2: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            grid: { drawOnChartArea: false },
-                            min: y2Min,
-                            max: y2Max,
-                            ticks: { callback: (v) => v + '%' }
-                        },
-                        x: { 
-                            grid: { display: false }, 
-                            ticks: { 
-                                font: { size: 8 }, 
-                                autoSkip: false,
-                                maxRotation: 45,
-                                minRotation: 0
-                            } 
-                        }
-                    }
-                }
-            });
-        }
-
-        function sortTable(field) {
-            if (sortField === field) {
-                sortAsc = !sortAsc;
-            } else {
-                sortField = field;
-                sortAsc = true;
-            }
-            filterData();
-        }
-
-        function renderTable(records) {
-            if (!records) {
-                filterData();
-                return;
-            }
-
-            const searchEl = document.getElementById('searchInput');
-            const colSecEl = document.getElementById('colFilterSection');
-            const colTypeEl = document.getElementById('colFilterType');
-            const badgeEl = document.getElementById('recordCountBadge');
+        function renderMainTable(records) {
             const tbody = document.getElementById('tableBody');
+            if(!tbody) return;
+            tbody.innerHTML = "";
 
-            if (!tbody) return;
-
-            const searchKey = searchEl ? searchEl.value.trim().toLowerCase() : '';
-            const colSection = colSecEl ? colSecEl.value : 'ALL';
-            const colType = colTypeEl ? colTypeEl.value : 'ALL';
-
-            let displayRecords = records.filter(r => {
-                const matchSearch = r.station.toLowerCase().includes(searchKey) || r.section.toLowerCase().includes(searchKey);
-                const matchColSection = (colSection === 'ALL' || r.section === colSection);
-                const matchColType = (colType === 'ALL' || r.type === colType);
-                return matchSearch && matchColSection && matchColType;
-            });
-
-            displayRecords.sort((a, b) => {
-                let valA = a[sortField];
-                let valB = b[sortField];
-                if (typeof valA === 'string') {
-                    valA = valA.toLowerCase();
-                    valB = valB.toLowerCase();
-                }
-                if (valA < valB) return sortAsc ? -1 : 1;
-                if (valA > valB) return sortAsc ? 1 : -1;
-                return 0;
-            });
-
-            if (badgeEl) badgeEl.innerText = `共 ${displayRecords.length} 筆`;
-
-            tbody.innerHTML = '';
-
-            if (displayRecords.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" class="px-4 py-8 text-center text-slate-400">查無符合條件的站所數據</td></tr>`;
+            if(records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">當前篩選條件下無物流分析數據</td></tr>';
                 return;
             }
 
-            displayRecords.forEach(r => {
+            records.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-
-                const isRateWarning = r.rate < 90;
-                const rateColorClass = isRateWarning ? "text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded" : "text-slate-800 font-semibold";
-                const typeBadgeClass = r.type === '自配' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200';
-
+                tr.className = "bg-white border-b border-slate-200 hover:bg-slate-50 transition";
                 tr.innerHTML = `
-                    <td class="px-3 py-2 font-bold text-slate-800">${r.station}</td>
-                    <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-medium">${r.section}</span></td>
-                    <td class="px-3 py-2"><span class="border px-2 py-0.5 rounded text-[11px] font-medium ${typeBadgeClass}">${r.type}</span></td>
-                    <td class="px-3 py-2 text-right font-medium">${r.arrived.toLocaleString()}</td>
-                    <td class="px-3 py-2 text-right text-slate-600">${r.unclosed.toLocaleString()}</td>
-                    <td class="px-3 py-2 text-right"><span class="${rateColorClass}">${r.rate.toFixed(1)}%</span></td>
-                    <td class="px-3 py-2 text-right ${r.unhandled > 0 ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${r.unhandled.toLocaleString()}</td>
-                    <td class="px-3 py-2 text-right">${r.handlingRate.toFixed(1)}%</td>
-                    <td class="px-3 py-2 text-right ${r.forwardD4 > 0 ? 'text-purple-600 font-bold' : 'text-slate-400'}">${r.forwardD4}</td>
-                    <td class="px-3 py-2 text-right ${r.reverseD3 > 0 ? 'text-indigo-600 font-bold' : 'text-slate-400'}">${r.reverseD3}</td>
-                    <td class="px-3 py-2 text-right ${r.overtimeTotal > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}">${r.overtimeTotal}</td>
-                    <td class="px-3 py-2 text-center space-x-1">
-                        <button onclick="editRecord('${String(r.id)}')" class="text-blue-600 hover:text-blue-800 p-1" title="編輯"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deleteRecord('${String(r.id)}')" class="text-rose-500 hover:text-rose-700 p-1" title="刪除"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderCharts(records) {
-            if (!records || records.length === 0) return;
-
-            const rankingCanvas = document.getElementById('rankingChart');
-            if (rankingCanvas) {
-                const sortedByRate = [...records].sort((a, b) => a.rate - b.rate).slice(0, 12);
-                const stationNames = sortedByRate.map(r => r.station);
-                const rateData = sortedByRate.map(r => parseFloat(r.rate.toFixed(1)));
-                const barColors = sortedByRate.map(r => r.rate < 90 ? 'rgba(239, 68, 68, 0.85)' : 'rgba(59, 130, 246, 0.85)');
-
-                const ctxRanking = rankingCanvas.getContext('2d');
-                if (rankingChartInstance) rankingChartInstance.destroy();
-
-                rankingChartInstance = new Chart(ctxRanking, {
-                    type: 'bar',
-                    data: {
-                        labels: stationNames,
-                        datasets: [{
-                            label: '配結率 (%)',
-                            data: rateData,
-                            backgroundColor: barColors,
-                            borderRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { callbacks: { label: (ctx) => `配結率: ${ctx.raw}%` } }
-                        },
-                        scales: {
-                            y: { min: 0, max: 100, ticks: { callback: v => v + '%' } },
-                            x: { ticks: { font: { size: 10 }, autoSkip: false, maxRotation: 45 } }
-                        }
-                    }
-                });
-            }
-
-            const retentionCanvas = document.getElementById('retentionChart');
-            if (retentionCanvas) {
-                const sortedByIssue = [...records].filter(r => (r.unhandled + r.forwardD4 + r.reverseD3) > 0)
-                                                  .sort((a, b) => (b.unhandled + b.forwardD4 + b.reverseD3) - (a.unhandled + a.forwardD4 + a.reverseD3))
-                                                  .slice(0, 12);
-
-                const issueStations = sortedByIssue.length > 0 ? sortedByIssue.map(r => r.station) : records.slice(0, 12).map(r => r.station);
-                const unhandledData = sortedByIssue.length > 0 ? sortedByIssue.map(r => r.unhandled) : records.slice(0, 12).map(r => r.unhandled);
-                const forwardD4Data = sortedByIssue.length > 0 ? sortedByIssue.map(r => r.forwardD4) : records.slice(0, 12).map(r => r.forwardD4);
-                const reverseD3Data = sortedByIssue.length > 0 ? sortedByIssue.map(r => r.reverseD3) : records.slice(0, 12).map(r => r.reverseD3);
-
-                const ctxRetention = retentionCanvas.getContext('2d');
-                if (retentionChartInstance) retentionChartInstance.destroy();
-
-                retentionChartInstance = new Chart(ctxRetention, {
-                    type: 'bar',
-                    data: {
-                        labels: issueStations,
-                        datasets: [
-                            { label: '未處理件數', data: unhandledData, backgroundColor: 'rgba(239, 68, 68, 0.8)' },
-                            { label: '正物流 D4↑', data: forwardD4Data, backgroundColor: 'rgba(168, 85, 247, 0.8)' },
-                            { label: '逆物流 D3↑', data: reverseD3Data, backgroundColor: 'rgba(99, 102, 241, 0.8)' }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { stacked: true, ticks: { font: { size: 10 }, autoSkip: false, maxRotation: 45 } },
-                            y: { stacked: true, beginAtZero: true }
-                        },
-                        plugins: {
-                            legend: { position: 'top', labels: { font: { size: 10 } } }
-                        }
-                    }
-                });
-            }
-        }
-
-        function backupDatabaseJSON() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allRecords, null, 2));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `物流站所完整資料庫備份_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(dlAnchorElem);
-            dlAnchorElem.click();
-            dlAnchorElem.remove();
-            showToast("成功導出完整 JSON 資料庫備份！");
-        }
-
-        function restoreDefaultDatabase() {
-            const defaultRecords = buildFullHistoricalDatabase();
-            allRecords = defaultRecords;
-            saveToLocalStorage(allRecords);
-            saveBatchToCloud(defaultRecords);
-            populateDateDropdown();
-            renderBenchStationButtons();
-            filterData();
-            updateDatabaseStats();
-            showToast("已將資料庫重置為初始預設值");
-        }
-
-        async function handleFileSelect(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
-
-            const fallbackDate = normalizeDateString(document.getElementById('uploadDateInput').value);
-            const statusDiv = document.getElementById('uploadStatus');
-            const statusText = document.getElementById('uploadStatusText');
-            const progressBar = document.getElementById('uploadProgressBar');
-            const progressText = document.getElementById('uploadProgressText');
-
-            statusDiv.classList.remove('hidden');
-            let totalFiles = files.length;
-            let processedCount = 0;
-            let newBatchRecords = [];
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                statusText.innerText = `正在分析檔案 (${i + 1}/${totalFiles}): ${file.name}`;
-                const progress = Math.round(((i + 1) / totalFiles) * 100);
-                progressBar.style.width = `${progress}%`;
-                progressText.innerText = `${progress}%`;
-
-                try {
-                    const records = await parseFile(file, fallbackDate);
-                    if (records && records.length > 0) {
-                        newBatchRecords = newBatchRecords.concat(records);
-                    }
-                } catch (err) {
-                    console.error("Parse error for file:", file.name, err);
-                }
-                processedCount++;
-            }
-
-            let lastImportedDate = null;
-            if (newBatchRecords.length > 0) {
-                newBatchRecords.forEach(r => r.date = normalizeDateString(r.date));
-                const batchDates = new Set(newBatchRecords.map(r => r.date));
-                
-                // Overwrite existing records for imported dates
-                allRecords = allRecords.filter(r => !batchDates.has(r.date));
-                
-                // Append new batch
-                allRecords = allRecords.concat(newBatchRecords);
-                
-                // Save to localStorage & Cloud
-                saveToLocalStorage(allRecords);
-                await saveBatchToCloud(newBatchRecords);
-
-                const sortedBatchDates = Array.from(batchDates).sort().reverse();
-                if (sortedBatchDates.length > 0) {
-                    lastImportedDate = sortedBatchDates[0];
-                }
-            }
-
-            populateDateDropdown();
-
-            if (lastImportedDate) {
-                const dateSelectEl = document.getElementById('dateSelect');
-                if (dateSelectEl) {
-                    dateSelectEl.value = lastImportedDate;
-                }
-            }
-
-            renderBenchStationButtons();
-            filterData();
-            updateDatabaseStats();
-            
-            setTimeout(() => {
-                statusDiv.classList.add('hidden');
-                closeModal('uploadModal');
-                const fileInputEl = document.getElementById('fileInput');
-                if (fileInputEl) fileInputEl.value = '';
-
-                showToast(`成功處理 ${processedCount} 個檔案！已匯入 ${newBatchRecords.length} 筆數據`);
-            }, 300);
-        }
-
-        async function parseFile(file, fallbackDate) {
-            const ext = file.name.split('.').pop().toLowerCase();
-            const filenameDate = extractDateFromFilename(file.name);
-            const targetDate = filenameDate || fallbackDate;
-            
-            if (ext === 'json') {
-                return await parseJSONFile(file);
-            } else if (['xlsx', 'xls', 'csv', 'txt'].includes(ext)) {
-                return await parseExcelOrCSV(file, targetDate);
-            } else if (['pdf', 'jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
-                return await parsePDFOrImage(file, targetDate);
-            }
-            return [];
-        }
-
-        function parseJSONFile(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        if (Array.isArray(data)) {
-                            resolve(data.map(item => ({
-                                id: String(item.id || (Date.now() + Math.random())),
-                                date: normalizeDateString(item.date || '2026-07-25'),
-                                station: String(item.station || '').trim().replace(/\u00a0/g, ' ').replace(/\s+/g, ' '),
-                                arrived: parseNumber(item.arrived),
-                                unclosed: parseNumber(item.unclosed),
-                                rate: parseRateNumber(item.rate),
-                                unhandled: parseNumber(item.unhandled),
-                                forwardD4: parseNumber(item.forwardD4),
-                                reverseD3: parseNumber(item.reverseD3)
-                            })));
-                        } else {
-                            resolve([]);
-                        }
-                    } catch (err) {
-                        console.error("JSON parse error:", err);
-                        resolve([]);
-                    }
-                };
-                reader.readAsText(file);
-            });
-        }
-
-        function parseExcelOrCSV(file, targetDate) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-                        if (!json || json.length === 0) {
-                            resolve([]);
-                            return;
-                        }
-
-                        let colMap = { date: -1, station: 0, arrived: 1, unclosed: 2, rate: 3, unhandled: 4, forwardD4: -1, reverseD3: -1 };
-                        let headerRowIdx = -1;
-
-                        for (let r = 0; r < Math.min(15, json.length); r++) {
-                            const row = json[r];
-                            if (!row || !Array.isArray(row)) continue;
-
-                            let tempMap = { date: -1, station: -1, arrived: -1, unclosed: -1, rate: -1, unhandled: -1, forwardD4: -1, reverseD3: -1 };
-                            let matchCount = 0;
-
-                            row.forEach((cell, cIdx) => {
-                                const str = String(cell || '').trim().replace(/\s+/g, '');
-                                if (!str) return;
-
-                                if (tempMap.station === -1 && /(站所|站別|站名|Station|名稱)/i.test(str) && !/報表|統計|明細/i.test(str)) { tempMap.station = cIdx; matchCount++; }
-                                else if (tempMap.arrived === -1 && /(到站|進貨|收件|Arrived|總件數)/i.test(str) && !/報表|統計/i.test(str)) { tempMap.arrived = cIdx; matchCount++; }
-                                else if (tempMap.unclosed === -1 && /(未結|Unclosed|未結量)/i.test(str) && !/報表|統計/i.test(str)) { tempMap.unclosed = cIdx; matchCount++; }
-                                else if (tempMap.rate === -1 && /(配結率|結案率|達成率|Completion|Rate|D欄)/i.test(str) && !/處理率/i.test(str)) { tempMap.rate = cIdx; matchCount++; }
-                                else if (tempMap.unhandled === -1 && /(未處理|Unhandled)/i.test(str)) { tempMap.unhandled = cIdx; matchCount++; }
-                                else if (tempMap.forwardD4 === -1 && /(正物流|D4)/i.test(str)) { tempMap.forwardD4 = cIdx; }
-                                else if (tempMap.reverseD3 === -1 && /(逆物流|D3)/i.test(str)) { tempMap.reverseD3 = cIdx; }
-                                else if (tempMap.date === -1 && /(日期|Date)/i.test(str)) { tempMap.date = cIdx; }
-                            });
-
-                            if (matchCount >= 2 && tempMap.station !== -1 && tempMap.arrived !== -1) {
-                                headerRowIdx = r;
-                                colMap = tempMap;
-                                if (colMap.rate === -1) colMap.rate = 3;
-                                if (colMap.unhandled === -1) colMap.unhandled = 4;
-                                break;
-                            }
-                        }
-
-                        let parsed = [];
-                        const startRow = (headerRowIdx !== -1) ? headerRowIdx + 1 : 0;
-
-                        for (let i = startRow; i < json.length; i++) {
-                            const row = json[i];
-                            if (!row || row.length === 0) continue;
-
-                            let stationRaw = row[colMap.station];
-                            if (!stationRaw) continue;
-                            let station = String(stationRaw).trim().replace(/\u00a0/g, ' ').replace(/\s+/g, ' ');
-
-                            if (!station || station === '總計' || station === '小計' || station === '合計' || station.includes('未達90%') || station === '站所' || station === '站所名稱' || station.includes('報表')) continue;
-
-                            let rowDate = targetDate;
-                            if (colMap.date !== -1 && row[colMap.date]) {
-                                const parsedDate = normalizeDateString(row[colMap.date]);
-                                if (parsedDate && parsedDate !== 'ALL' && parsedDate.length >= 8) {
-                                    rowDate = parsedDate;
-                                }
-                            }
-
-                            let arrived = parseNumber(row[colMap.arrived]);
-                            let unclosed = parseNumber(row[colMap.unclosed]);
-
-                            // Directly capture Column D rate value without recalculation
-                            let rawRateCell = undefined;
-                            if (colMap.rate !== -1 && row[colMap.rate] !== undefined && row[colMap.rate] !== null && row[colMap.rate] !== '') {
-                                rawRateCell = row[colMap.rate];
-                            } else if (row[3] !== undefined && row[3] !== null && row[3] !== '') {
-                                rawRateCell = row[3];
-                            }
-
-                            let rateVal = parseRateNumber(rawRateCell);
-
-                            let unhandled = (colMap.unhandled !== -1 && row[colMap.unhandled] !== undefined) ? parseNumber(row[colMap.unhandled]) : 0;
-                            let forwardD4 = (colMap.forwardD4 !== -1 && row[colMap.forwardD4] !== undefined) ? parseNumber(row[colMap.forwardD4]) : 0;
-                            let reverseD3 = (colMap.reverseD3 !== -1 && row[colMap.reverseD3] !== undefined) ? parseNumber(row[colMap.reverseD3]) : 0;
-
-                            const uniqueId = `${rowDate}_${station}_${i}_${Math.random().toString(36).substring(2,6)}`;
-
-                            parsed.push({
-                                id: uniqueId,
-                                date: rowDate,
-                                station: station,
-                                arrived: arrived,
-                                unclosed: unclosed,
-                                rate: rateVal,
-                                unhandled: unhandled,
-                                forwardD4: forwardD4,
-                                reverseD3: reverseD3
-                            });
-                        }
-                        resolve(parsed);
-                    } catch (err) {
-                        console.error("Excel parse error:", err);
-                        resolve([]);
-                    }
-                };
-                reader.readAsArrayBuffer(file);
-            });
-        }
-
-        async function parsePDFOrImage(file, targetDate) {
-            try {
-                if (file.type === 'application/pdf') {
-                    try {
-                        const pdfArrayBuffer = await file.arrayBuffer();
-                        const directPdfRecords = await parsePDFTextDirect(pdfArrayBuffer, targetDate);
-                        if (directPdfRecords && directPdfRecords.length > 0) {
-                            return directPdfRecords;
-                        }
-                    } catch (pdfErr) {
-                        console.warn("Direct PDF text extraction fallback:", pdfErr);
-                    }
-                }
-            } catch (e) {
-                console.error("AI parsing error:", e);
-            }
-
-            return baseRecords20260725.map((b, idx) => ({
-                id: `${targetDate}_${b.station}_${idx}`,
-                date: targetDate,
-                station: b.station,
-                arrived: b.arrived,
-                unclosed: b.unclosed,
-                rate: b.rate,
-                unhandled: b.unhandled,
-                forwardD4: b.forwardD4,
-                reverseD3: b.reverseD3
-            }));
-        }
-
-        async function parsePDFTextDirect(arrayBuffer, targetDate) {
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            let fullText = "";
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join(" ");
-                fullText += pageText + "\n";
-            }
-
-            let parsed = [];
-            const knownStations = Object.keys(STATION_SECTION_MAP);
-            knownStations.forEach((st, idx) => {
-                if (fullText.includes(st)) {
-                    const regex = new RegExp(st.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+(\\d+)\\s+(\\d+)', 'i');
-                    const match = fullText.match(regex);
-                    if (match) {
-                        parsed.push({
-                            id: `${targetDate}_${st}_${idx}`,
-                            date: targetDate,
-                            station: st,
-                            arrived: parseNumber(match[1]),
-                            unclosed: parseNumber(match[2]),
-                            unhandled: 0,
-                            forwardD4: 0,
-                            reverseD3: 0
-                        });
-                    }
-                }
-            });
-            return parsed;
-        }
-
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            const editId = document.getElementById('editRecordId').value;
-            const date = normalizeDateString(document.getElementById('formDate').value);
-            const station = document.getElementById('formStation').value.trim();
-            const arrived = parseNumber(document.getElementById('formArrived').value);
-            const unclosed = parseNumber(document.getElementById('formUnclosed').value);
-            
-            const rateInput = document.getElementById('formRate').value;
-            const rate = rateInput !== '' ? parseFloat(rateInput) : (arrived > 0 ? parseFloat((((arrived - unclosed) / arrived) * 100).toFixed(1)) : 100);
-
-            const unhandled = parseNumber(document.getElementById('formUnhandled').value);
-            const forwardD4 = parseNumber(document.getElementById('formForwardD4').value);
-            const reverseD3 = parseNumber(document.getElementById('formReverseD3').value);
-
-            let newRec = null;
-            if (editId) {
-                const idx = allRecords.findIndex(r => String(r.id) === String(editId));
-                newRec = { id: String(editId), date, station, arrived, unclosed, rate, unhandled, forwardD4, reverseD3 };
-                if (idx !== -1) {
-                    allRecords[idx] = newRec;
-                }
-            } else {
-                newRec = { id: `${date}_${station}_${Date.now()}`, date, station, arrived, unclosed, rate, unhandled, forwardD4, reverseD3 };
-                allRecords.push(newRec);
-            }
-
-            saveToLocalStorage(allRecords);
-            saveRecordToCloud(newRec);
-
-            closeModal('addModal');
-            populateDateDropdown();
-            renderBenchStationButtons();
-            filterData();
-            showToast("成功儲存站所記錄！");
-        }
-
-        function editRecord(id) {
-            const rec = allRecords.find(r => String(r.id) === String(id));
-            if (!rec) return;
-
-            document.getElementById('modalTitle').innerText = '編輯站所記錄';
-            document.getElementById('editRecordId').value = rec.id;
-            document.getElementById('formDate').value = rec.date;
-            document.getElementById('formStation').value = rec.station;
-            document.getElementById('formArrived').value = rec.arrived;
-            document.getElementById('formUnclosed').value = rec.unclosed;
-            document.getElementById('formRate').value = (rec.rate !== undefined && rec.rate !== null) ? rec.rate.toFixed(1) : '';
-            document.getElementById('formUnhandled').value = rec.unhandled;
-            document.getElementById('formForwardD4').value = rec.forwardD4;
-            document.getElementById('formReverseD3').value = rec.reverseD3;
-
-            openModal('addModal');
-        }
-
-        function deleteRecord(id) {
-            allRecords = allRecords.filter(r => String(r.id) !== String(id));
-            saveToLocalStorage(allRecords);
-            deleteRecordFromCloud(id);
-
-            populateDateDropdown();
-            renderBenchStationButtons();
-            filterData();
-            showToast("已刪除該筆站所資料");
-        }
-
-        function exportToCSV() {
-            const selectedDate = document.getElementById('dateSelect').value;
-            let rows = [["分析日期", "站所名稱", "課別", "屬性", "到站件數", "未結量", "配結率(%)", "未處理件數", "處理率(%)", "正物流D4超時", "逆物流D3超時", "超時總計"]];
-
-            allRecords.forEach(r => {
-                if (selectedDate === 'ALL' || r.date === selectedDate) {
-                    const sec = getStationSection(r.station);
-                    const type = getStationType(r.station);
-                    const rate = (r.rate !== undefined && r.rate !== null) 
-                        ? r.rate.toFixed(1) 
-                        : (r.arrived > 0 ? ((r.arrived - r.unclosed) / r.arrived * 100).toFixed(1) : "100.0");
-                    const handlingRate = r.unclosed > 0 ? ((r.unclosed - r.unhandled) / r.unclosed * 100).toFixed(1) : "100.0";
-                    const totalOvertime = r.forwardD4 + r.reverseD3;
-
-                    rows.push([r.date, r.station, sec, type, r.arrived, r.unclosed, rate, r.unhandled, handlingRate, r.forwardD4, r.reverseD3, totalOvertime]);
-                }
-            });
-
-            let csvContent = "\uFEFF" + rows.map(e => e.join(",")).join("\n");
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `物流站所配結率報表_${selectedDate}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast("成功匯出 CSV 報表！");
-        }
-
-        window.openModal = openModal;
-        window.closeModal = closeModal;
-        window.exportToCSV = exportToCSV;
-        window.filterData = filterData;
-        window.setSectionFilter = setSectionFilter;
-        window.setTypeFilter = setTypeFilter;
-        window.toggleBenchmarkPanel = toggleBenchmarkPanel;
-        window.selectAllBenchStations = selectAllBenchStations;
-        window.selectTypeBenchStations = selectTypeBenchStations;
-        window.selectActiveSectionStations = selectActiveSectionStations;
-        window.toggleBenchStation = toggleBenchStation;
-        window.selectSingleBenchStation = selectSingleBenchStation;
-        window.renderTable = renderTable;
-        window.sortTable = sortTable;
-        window.backupDatabaseJSON = backupDatabaseJSON;
-        window.restoreDefaultDatabase = restoreDefaultDatabase;
-        window.handleFileSelect = handleFileSelect;
-        window.handleFormSubmit = handleFormSubmit;
-        window.editRecord = editRecord;
-        window.deleteRecord = deleteRecord;
-        window.deleteDateRecords = deleteDateRecords;
-
-        window.onload = function() {
-            initCloudStorage();
-        };
-    </script>
-</body>
-</html>
+                    <td class="px-4 py-3 font-bold text-slate-900">${row.station} <span class="text-[10px] font-normal text-slate-400">(${getStationSection(row.station)})</span></td>
+                    <td class="px-4 py-3 font-medium">${row.arrived.toLocaleString()} 件</td>
+                    <td class="px-4 py-3 text-amber-600 font-semibold">${row.unclosed.toLocaleString()} 件</td>
+                    <td class="px-4 py-3 text-blue-600 font-bold">${row.rate}%</td>
+                    <td class="px-4 py-3 text-slate-500 text-[11px]"><span class="bg-rose-50 text-rose-700 px-1 py-0.5 rounded mr-1">未處: ${row.unhandled}</span><span class="bg-purple-50 text-purple-700 px-1 py-0.5 rounded mr-1">正D4: ${row.forwardD4}</span><span class="bg-indigo-50 text-indigo-700 px-1 py-0.5 rounded">逆D3: ${row.reverseD3}</span></td>
